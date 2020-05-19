@@ -51,6 +51,9 @@
 
 ### Open questions
 
++ **Level 1:** is this a good short-term use of time as a way to gather data about next projects?
++ **Level 2:** is this a good long-term use of our time and resources?
+
 + How will people find this?
 + Will people who find it use it?
 + Is the data valuable?
