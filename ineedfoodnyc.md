@@ -38,7 +38,7 @@
 #### Initial Project
 
 + Users find us through partnerships with existing organizations, SEO and Google Ads (using our ad credit).
-+ Each user is directed to text or call a phone number (TBD).
++ Each user is directed to text or call a phone number.
 + On the backend, our team of trained human volunteers work on a case by case basis to send back tailored resources and hold folks hands through their first experiences.
 + As they go, each volunteer is logging the results of each request and creating detailed data on each resource.
 
