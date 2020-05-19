@@ -32,7 +32,7 @@
 
 ## Proposal
 
-#### INeedFood.nyc is a 24/7 hotline where you can text or call with a real human who will help you find free food resources near you.
+*INeedFood.nyc is a 24/7 hotline where you can text or call with a real human who will help you find free food resources near you.*
 
 
 #### Initial Project
