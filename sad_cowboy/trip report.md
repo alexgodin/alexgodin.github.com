@@ -1,4 +1,3 @@
-<!--
 ![](/photos/000044810001.jpg)
 ![](/photos/000044810003.jpg)
 ![](/photos/000044810004.jpg)
@@ -39,25 +38,49 @@
 ![](/photos/000048280025.jpg)
 ![](/photos/000048280028.jpg)
 ![](/photos/000048280029.jpg)
+<!-- 
+![](/photos/000044810001.jpg)
+![](/photos/000048270002.jpg)
+![](/photos/000048280005.jpg)
+![](/photos/000044810003.jpg)
+![](/photos/000048270011.jpg)
+![](/photos/000048280009.jpg)
+![](/photos/000044810004.jpg)
+![](/photos/000048270012.jpg)
+![](/photos/000048280010.jpg)
+![](/photos/000044810006.jpg)
+![](/photos/000048270013.jpg)
+![](/photos/000048280011.jpg)
+![](/photos/000044810007.jpg)
+![](/photos/000048270014.jpg)
+![](/photos/000048280012.jpg)
+![](/photos/000044810008.jpg)
+![](/photos/000048270016.jpg)
+![](/photos/000048280014.jpg)
+![](/photos/000044810009.jpg)
+![](/photos/000048270020.jpg)
+![](/photos/000048280017.jpg)
+![](/photos/000044810014.jpg)
+![](/photos/000048270022.jpg)
+![](/photos/000048280019.jpg)
+![](/photos/000044810019.jpg)
+![](/photos/000048270024.jpg)
+![](/photos/000048280020.jpg)
+![](/photos/000044810020.jpg)
+![](/photos/000048270026.jpg)
+![](/photos/000048280025.jpg)
+![](/photos/000044810022.jpg)
+![](/photos/000048270028.jpg)
+![](/photos/000048280028.jpg)
+![](/photos/000044810023.jpg)
+![](/photos/000048270032.jpg)
+![](/photos/000048280029.jpg)
+![](/photos/000044810027.jpg)
+![](/photos/000048280003.jpg)
+![](/photos/000044810029.jpg)
+![](/photos/000048280004.jpg)
  -->
-
 Trip report
-
-# The Sad Cowboy Traverse
-## A wild week in the desert.
-
-A few weeks ago I had the adventure of a lifetime. I walked miles across the open desert with few visible landmarks, forded a silty fast-moving river, squirmed my way out of knee deep quicksand, squeezed my way through slot canyons and scrambled up an 800 foot cliff... But, it was more than a physical journey, it was a time of immense of self-discovery, I contemplated my life, shed some tears and basked in the open silence of the desert (I didn't see a single person for more than 48 hours in a row).
-
-The trip had two legs, an easy out-and-back jaunt on the [Boulder Mail Trail](https://debravanwinegarden.blogspot.com/2017/10/boulder-mail-trail-to-death-hollow-and.html)–my first time ever desert hiking. Followed by an attempt at a modified version of [James and Amy's Escalante Side Canyons Loop](https://doingmiles.com/2020-09-escalante/). In all, I wound up hiking 71 miles in a little more than a week.
-
-![](/photos/hike_map.png)
-
-In 2021 I became obsessed with Sad Cowboy Music–Willie Nelson, Townes Van Zandt, etc. This music has become a healing spiritual force.
-
-As you read about the excursion, I recommend that you listen to 
-
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/4iRVghM790FlkL14NwTKnA?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
 
 #### Day 0
 I wake up in a shitty casino hotel in Vegas (to remain nameless) and drive 5 hours to Escalante. I stopped at Swig (Utah’s best Mormon soda cocktail drive-thru) and the Desert Rat (great gear store in St. George). I eat dinner at Hell’s Backbone Grill in Boulder Utah (a restaurant I’ve been meaning to go to for five years and yes it lived up to the hype).
