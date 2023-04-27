@@ -1,11 +1,4 @@
 <!--
-![](/photos/000044810001.jpg)
-![](/photos/000044810003.jpg)
-![](/photos/000044810004.jpg)
-![](/photos/000044810006.jpg)
-![](/photos/000044810007.jpg)
-![](/photos/000044810008.jpg)
-![](/photos/000044810009.jpg)
 ![](/photos/000044810014.jpg)
 ![](/photos/000044810019.jpg)
 ![](/photos/000044810020.jpg)
@@ -40,9 +33,6 @@
 ![](/photos/000048280028.jpg)
 ![](/photos/000048280029.jpg)
  -->
-
-Trip report
-
 # The Sad Cowboy Traverse
 ## A wild week in the desert.
 
@@ -50,14 +40,13 @@ A few weeks ago I had the adventure of a lifetime. I walked miles across the ope
 
 The trip had two legs, an easy out-and-back jaunt on the [Boulder Mail Trail](https://debravanwinegarden.blogspot.com/2017/10/boulder-mail-trail-to-death-hollow-and.html)–my first time ever desert hiking. Followed by an attempt at a modified version of [James and Amy's Escalante Side Canyons Loop](https://doingmiles.com/2020-09-escalante/). In all, I wound up hiking 71 miles in a little more than a week.
 
-![](/photos/hike_map.png)
+[![](/photos/hike_map.png)](https://caltopo.com/m/F1CUH)
 
-In 2021 I became obsessed with Sad Cowboy Music–Willie Nelson, Townes Van Zandt, etc. This music has become a healing spiritual force.
-
-As you read about the excursion, I recommend that you listen to 
+This trip started with an obsession with the American West sparked by a love of what I call "Sad Cowboy Music". As you read about my journey, I encourage you to listen to some Willie, Townes and Waylon.
 
 <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/4iRVghM790FlkL14NwTKnA?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
+I cannot recommend hiking in Grand Staircase Escalante more. That said, this is the wildest place I have ever been and even with more than a hundred hours of research, I was overwhelemed and surprised every single day. I've included some gear I was glad I had as well as some recommended resources at the bottom of this post. Be careful out there and if you have any questions email me.
 
 #### Day 0
 I wake up in a shitty casino hotel in Vegas (to remain nameless) and drive 5 hours to Escalante. I stopped at Swig (Utah’s best Mormon soda cocktail drive-thru) and the Desert Rat (great gear store in St. George). I eat dinner at Hell’s Backbone Grill in Boulder Utah (a restaurant I’ve been meaning to go to for five years and yes it lived up to the hype).
@@ -65,20 +54,34 @@ I wake up in a shitty casino hotel in Vegas (to remain nameless) and drive 5 hou
 #### Day 1 - Boulder Airstrip ➡️ Death Hollow
 I pack my gear and, after checking in at the Interagency Visitor Center, begin a two-day out and back hike of the Boulder Mail Trail. I’ve never hiked in the desert before and this was the perfect “training wheels” hike. I discovered the magic of slick rock walking, took a nap in the shade of a piñon tree and cooled my feet in the icy waters of Death Hollow. I did a total of 7.5 miles from the Boulder Airstrip trailhead down to my campsite in peaceful DH across from the exit out. 
 
+![](/photos/000044810001.jpg)
+
 This was only my second time pitching my DuoMid treking pole tent and my beach campsite did not make it easy. I discovered that my guylines were way too short and 
 my stakes were puny (mini groundhogs). After finishing this hike I upgraded both.
 
+![](/photos/000044810003.jpg)
+
 That night I was freezing… Despite temperatures in the mid forties, my 20° quilt and Sea To Summit Ether Light insulated pad did not keep my warm. This was a theme—I did not get a warm night sleep the whole trip. I blame the pad primarily, I returned it to REI on the way home.
+
+![](/photos/000044810004.jpg)
 
 ####  Day 2 - Death Hollow ➡️ Boulder Airstrip
 
 God I love waking up in the woods. I slept in and awoke to the rushing stream and verdant landscape of Death Hollow. My site was on a sandy ledge about 6 feet up and surrounded by massive trees and staggering canyon walls.
 
+![](/photos/000044810006.jpg)
+
 I ate a lazy breakfast and left my pack to wander another half mile down canyon and explore a side canyon. It was a primal and grounding experience scrambling around this alien landscape without a goal. 
+
+![](/photos/000044810007.jpg)
 
 Doing this hike as a lazy out and back took lots of pressure off. The hike out was somehow even more drop-dead gorgeous than the way in—probably because I was beginning to relax into the landscape. By early afternoon I was sunbaked and absolutely parched, the running water in Sand Creek was much needed manna. I made it to the car around 3:30 and knew this was going to be a great week.
 
+![](/photos/000044810008.jpg)
+
 This hike is really so varied, luxurious and accessible. I would wholeheartedly recommend it to anyone looking to start exploring this wild place. And I only saw five other groups in two days.
+
+![](/photos/000044810009.jpg)
 
 After the hike I drove the Burr Trail to set a cache at the top of the Gulch for the next adventure. On the way out, I pulled over to take a photo and got my car stuck in the mud… This boondoggle let me meet some real southern Utah characters including Michael, my tow driver who had lived in Bicknell (pop. 300) since before they “oiled the road.”
 
@@ -177,3 +180,40 @@ I took out my inReach and emailed Sean from Escape Goats to arrange a shuttle ba
 #### Day 8 - Down into The Gulch
 
 I woke up early and pushed for a few hours down into 
+
+
+#### Foot Notes
+
+**Gear I was glad I had:**
+
+* ULA Catalyst Pack
+* 40 feet of 1" Webbing
+* Water Wizard for River Runners
+* Sawyer Squeeze + CNOC outdoors 3L dirty bag + water scoop (cut up soda bottle)
+* Wag Bags
+* Sea to summit ground control tent stakes
+* Dirty Girl Gaiters
+* Altra Lone Peak
+* LifeProof iPhone Case
+* Caltopo app
+* Melanzana MicroGrid
+* Julbo Montebianco 2
+* Patagonia Tropic Comfort II
+* Inreach
+* Doctor Bronners Magic Balm (rub that shit everywhere)
+* $300 cash + Escape Goats Tour Email Address
+
+**Resources**
+
+* Road Trip Ryan
+* DoingMiles
+* Jamal Green (Youtube)
+* acrossutah.com
+* Debra Van Winegarde 
+* Backcountry Post
+
+**Thank You**
+
+* The Backcountry Post Community
+* 
+
