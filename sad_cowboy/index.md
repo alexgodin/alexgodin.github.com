@@ -1,3 +1,4 @@
+<!--
 ![](/photos/000044810001.jpg)
 ![](/photos/000044810003.jpg)
 ![](/photos/000044810004.jpg)
@@ -38,49 +39,13 @@
 ![](/photos/000048280025.jpg)
 ![](/photos/000048280028.jpg)
 ![](/photos/000048280029.jpg)
-<!-- 
-![](/photos/000044810001.jpg)
-![](/photos/000048270002.jpg)
-![](/photos/000048280005.jpg)
-![](/photos/000044810003.jpg)
-![](/photos/000048270011.jpg)
-![](/photos/000048280009.jpg)
-![](/photos/000044810004.jpg)
-![](/photos/000048270012.jpg)
-![](/photos/000048280010.jpg)
-![](/photos/000044810006.jpg)
-![](/photos/000048270013.jpg)
-![](/photos/000048280011.jpg)
-![](/photos/000044810007.jpg)
-![](/photos/000048270014.jpg)
-![](/photos/000048280012.jpg)
-![](/photos/000044810008.jpg)
-![](/photos/000048270016.jpg)
-![](/photos/000048280014.jpg)
-![](/photos/000044810009.jpg)
-![](/photos/000048270020.jpg)
-![](/photos/000048280017.jpg)
-![](/photos/000044810014.jpg)
-![](/photos/000048270022.jpg)
-![](/photos/000048280019.jpg)
-![](/photos/000044810019.jpg)
-![](/photos/000048270024.jpg)
-![](/photos/000048280020.jpg)
-![](/photos/000044810020.jpg)
-![](/photos/000048270026.jpg)
-![](/photos/000048280025.jpg)
-![](/photos/000044810022.jpg)
-![](/photos/000048270028.jpg)
-![](/photos/000048280028.jpg)
-![](/photos/000044810023.jpg)
-![](/photos/000048270032.jpg)
-![](/photos/000048280029.jpg)
-![](/photos/000044810027.jpg)
-![](/photos/000048280003.jpg)
-![](/photos/000044810029.jpg)
-![](/photos/000048280004.jpg)
  -->
+
 Trip report
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/4iRVghM790FlkL14NwTKnA?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+A few weeks ago I had the adventure of a lifetime.
 
 #### Day 0
 I wake up in a shitty casino hotel in Vegas (to remain nameless) and drive 5 hours to Escalante. I stopped at Swig (Utah’s best Mormon soda cocktail drive-thru) and the Desert Rat (great gear store in St. George). I eat dinner at Hell’s Backbone Grill in Boulder Utah (a restaurant I’ve been meaning to go to for five years and yes it lived up to the hype).
