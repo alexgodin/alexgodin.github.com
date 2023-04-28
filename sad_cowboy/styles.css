@@ -56,6 +56,13 @@ table {
 
 /*END RESET*/
 
+a{
+	color:#6b9ea3;
+}
+
+a:visited{
+	color:#6b9ea3;
+}
 
 body{
 	background-color: #f0ecd6;
@@ -152,7 +159,7 @@ img{
 }
 
 .inline_photo img{
-	max-width:650px;
+	max-width:550px;
 }
 
 li{
