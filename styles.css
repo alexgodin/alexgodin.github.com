@@ -1,0 +1,131 @@
+:root{
+	--black:#191923;
+	--blue:#90DDF0;
+	--green:#7DB58D;
+	--dark-green:#437551;
+	--pink: #FDD5C4;
+	--brown:#763004;
+}
+
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+
+body{
+	font-family: 'Work Sans', sans-serif;
+}
+
+
+section{
+	padding-top: 50px;
+	padding-bottom: 50px;
+}
+
+.inner{
+	max-width: 800px;
+	margin-left: auto;
+	margin-right: auto;
+}
+.one{
+	background: var(--pink);
+	color: var(--brown);
+}
+
+.two{
+	background: var(--brown);
+	color:var(--pink);
+}
+
+h1{
+	font-size: 5em;
+	font-weight:700;
+}
+
+h2{
+	font-size: 2.5em;
+	font-weight:700;
+}
+
+h3{
+	font-size: 1.7em;
+	font-weight: 300;
+}
+
+
+p {
+	font-size:1em;
+	font-weight: 300;
+}
+
+ul{
+	display:flex;
+}
+
+.brag{
+	padding:8px 8px 8px 8px;
+	background:var(--pink);
+	color:var(--brown);
+	margin-top:15px;
+	margin-bottom:15px;
+/*	margin-left: 15px;*/
+/*	margin-right: 15px;*/
+	padding: 10px 10px 10px 10px;
+	border-radius:5px;
+}
+
+
+.brag p{
+	margin-top:10px;
+	margin-bottom:10px;
+}
+
+a{
+/*	text-decoration: none;*/
+	font-weight: 700;
+	color: var(--brown);
+}
+
+/*.button{
+	display:block;
+	background:var(--green);
+	color:var(--black);
+	padding: 5px 5px 5px 5px;
+	margin-top:10px;
+	margin-bottom:10px;
+	text-decoration: none;
+	width: 100px;
+	text-align:center;
+	border-radius:5px;
+} 
+*/
+
+strong{
+	font-weight: 700;
+}
