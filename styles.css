@@ -53,7 +53,7 @@ section{
 	margin-left: auto;
 	margin-right: auto;
 }
-.one{
+.one, .three{
 	background: var(--pink);
 	color: var(--brown);
 }
@@ -63,24 +63,35 @@ section{
 	color:var(--pink);
 }
 
+.heading h1{
+	margin-bottom:0;
+}
+
 h1{
 	font-size: 5em;
 	font-weight:700;
+	line-height: .8;
 }
 
 h2{
-	font-size: 2.5em;
+	font-size: 4em;
+	font-weight: 300;
+	line-height: 1;
+}
+
+h5{
+	font-size: 1em;
 	font-weight:700;
 }
 
 h3{
-	font-size: 1.7em;
+	font-size: 1.4em;
 	font-weight: 300;
 }
 
 
 p {
-	font-size:1em;
+	font-size:1.4em;
 	font-weight: 300;
 }
 
@@ -89,15 +100,10 @@ ul{
 }
 
 .brag{
-	padding:8px 8px 8px 8px;
-	background:var(--pink);
-	color:var(--brown);
-	margin-top:15px;
-	margin-bottom:15px;
-/*	margin-left: 15px;*/
-/*	margin-right: 15px;*/
-	padding: 10px 10px 10px 10px;
-	border-radius:5px;
+	margin-bottom: 50px;
+	border-left: 5px solid;
+	box-sizing: border-box;
+	padding-left: 40px;
 }
 
 
@@ -109,7 +115,11 @@ ul{
 a{
 /*	text-decoration: none;*/
 	font-weight: 700;
-	color: var(--brown);
+	color: var(--pink);
+}
+
+h1{
+	margin-bottom: 50px;
 }
 
 /*.button{
