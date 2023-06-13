@@ -138,10 +138,25 @@ strong{
 }
 
 @media screen and (max-width :800px){
-	h1{
-		font-size: 1em;
+	h1, h2{
+		font-size: 3.5em;
 	}
-	.one{
-		background: blue;
+
+	h3, p{
+		font-size:1.2em;
+	}
+	.inner{
+		padding-left:20px;
+		padding-right:20px;
+	}
+	.brag{
+		padding-left: 20px;
+	}
+
+	.four .inner h1{
+		font-size: 2em;
+	}
+	.four .inner h2{
+		font-size: 2em;
 	}
 }
