@@ -118,11 +118,16 @@ ul{
 	margin-bottom:10px;
 }
 
+.three a{
+	color:var(--brown);
+}
+
 a{
 /*	text-decoration: none;*/
 	font-weight: 700;
 	color: var(--pink);
 }
+
 
 h1{
 	margin-bottom: 50px;
