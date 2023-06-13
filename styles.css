@@ -7,6 +7,7 @@
 	--brown:#763004;
 }
 
+
 /* http://meyerweb.com/eric/tools/css/reset/ 
    v2.0 | 20110126
    License: none (public domain)
@@ -48,6 +49,11 @@ section{
 	padding-bottom: 50px;
 }
 
+.one{
+	padding-top: 200px;
+	padding-bottom: 200px;
+}
+
 .inner{
 	max-width: 800px;
 	margin-left: auto;
@@ -58,12 +64,12 @@ section{
 	color: var(--brown);
 }
 
-.two{
+.two, .four{
 	background: var(--brown);
 	color:var(--pink);
 }
 
-.heading h1{
+.heading h1, .four h1{
 	margin-bottom:0;
 }
 
@@ -74,7 +80,7 @@ h1{
 }
 
 h2{
-	font-size: 4em;
+	font-size: 5em;
 	font-weight: 300;
 	line-height: 1;
 }
@@ -138,4 +144,13 @@ h1{
 
 strong{
 	font-weight: 700;
+}
+
+@media screen and (max-width :800px){
+	h1{
+		font-size: 1em;
+	}
+	.one{
+		background: blue;
+	}
 }
