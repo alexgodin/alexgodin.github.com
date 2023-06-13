@@ -7,7 +7,17 @@ body{
 	margin-right: auto;
 
 }
-div{
+a {
+	display: block;
+	font-weight: 700;
+	text-decoration: none;
+	color:black;
+}
+span
+{
+	font-weight: 300;
+}
+a, div{
 	max-width:500px;
 	margin:10px 10px 10px 10px;
 	padding:10px 10px 10px 10px;
@@ -16,13 +26,6 @@ div{
 	text-align: center;
 	background-color:black;
 	color:white;
-}
-a{
-	width:100%;
-	display:block;
-	font-weight: 700;
-	text-decoration: none;
-	color:black;
 }
 h3{
 	font-weight:300;
