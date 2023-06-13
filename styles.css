@@ -133,20 +133,6 @@ h1{
 	margin-bottom: 50px;
 }
 
-/*.button{
-	display:block;
-	background:var(--green);
-	color:var(--black);
-	padding: 5px 5px 5px 5px;
-	margin-top:10px;
-	margin-bottom:10px;
-	text-decoration: none;
-	width: 100px;
-	text-align:center;
-	border-radius:5px;
-} 
-*/
-
 strong{
 	font-weight: 700;
 }
