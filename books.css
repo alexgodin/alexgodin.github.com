@@ -30,3 +30,11 @@ a, div{
 h3{
 	font-weight:300;
 }
+
+h5{
+	font-weight:300;
+	margin-top: 5px;
+}
+h2{
+	margin-bottom:0;
+}
