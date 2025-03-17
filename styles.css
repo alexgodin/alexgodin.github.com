@@ -1,12 +1,3 @@
-:root{
-	--black:#191923;
-	--blue:#90DDF0;
-	--green:#7DB58D;
-	--dark-green:#437551;
-	--pink: #FDD5C4;
-	--brown:#763004;
-}
-
 
 /* http://meyerweb.com/eric/tools/css/reset/ 
    v2.0 | 20110126
@@ -41,122 +32,33 @@ footer, header, hgroup, menu, nav, section {
 
 body{
 	font-family: 'Work Sans', sans-serif;
-}
-
-
-section{
-	padding-top: 50px;
-	padding-bottom: 50px;
-}
-
-.one{
-	padding-top: 200px;
-	padding-bottom: 200px;
-}
-
-.inner{
-	max-width: 800px;
-	margin-left: auto;
-	margin-right: auto;
-}
-.one, .three{
-	background: var(--pink);
-	color: var(--brown);
-}
-
-.two, .four{
-	background: var(--brown);
-	color:var(--pink);
-}
-
-.heading h1, .four h1{
-	margin-bottom:0;
-}
-
-h1{
-	font-size: 5em;
-	font-weight:700;
-	line-height: .8;
-}
-
-h2{
-	font-size: 5em;
-	font-weight: 300;
-	line-height: 1;
-}
-
-h5{
-	font-size: 1em;
-	font-weight:700;
-}
-
-h3{
-	font-size: 1.4em;
-	font-weight: 300;
-}
-
-
-p {
-	font-size:1.4em;
-	font-weight: 300;
-}
-
-ul{
-	display:flex;
-}
-
-.brag{
-	margin-bottom: 50px;
-	border-left: 5px solid;
-	box-sizing: border-box;
-	padding-left: 40px;
-}
-
-
-.brag p{
-	margin-top:10px;
-	margin-bottom:10px;
-}
-
-.three a{
-	color:var(--brown);
-}
-
-a{
-/*	text-decoration: none;*/
+	font-family: "neue-haas-grotesk-display", sans-serif;
 	font-weight: 700;
-	color: var(--pink);
+	font-style: normal;
+	text-transform: uppercase;
+	font-size: 40px;
 }
 
-
-h1{
-	margin-bottom: 50px;
+main {
+	padding-left: 20px;
+	padding-right:20px;
 }
 
-strong{
-	font-weight: 700;
+.italic {
+font-style: italic;
 }
 
-@media screen and (max-width :800px){
-	h1, h2{
-		font-size: 3.5em;
-	}
-
-	h3, p{
-		font-size:1.2em;
-	}
-	.inner{
-		padding-left:20px;
-		padding-right:20px;
-	}
-	.brag{
-		padding-left: 20px;
-	}
-
-	.four .inner h1{
-		font-size: 2em;
-	}
-	.four .inner h2{
-		font-size: 2em;
-	}
+.header {
+	margin-top: 30px;
+	margin-bottom: 30px;
 }
+
+.subhead {
+	font-weight: 400;
+}
+
+.bull {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
