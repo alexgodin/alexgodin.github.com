@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Chant</title>
+  <style>
+    html,body{height:100%;margin:0}
+    body{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f5f3ee;font-family:system-ui,sans-serif;gap:16px;padding:24px;box-sizing:border-box;text-align:center}
+    button{padding:16px 32px;border:none;border-radius:999px;background:#111;color:#fff;font:600 16px system-ui;cursor:pointer}
+    button:hover{background:#333}
+    #lyrics{color:#222;font:italic 18px/1.7 Georgia,serif;max-width:32em}
+    #c{color:#555;font:14px system-ui}
+    #credit{color:#888;font:12px system-ui;max-width:32em}
+    #credit a{color:#888}
+  </style>
+</head>
+<body>
+  <div id="lyrics">
+    Vast is the robe of liberation,<br>
+    a formless field of benefaction.<br>
+    I wear the Tathagata's teachings,<br>
+    saving all sentient beings.
+  </div>
+  <audio id="a" src="Verse-of-the-Kesa-1.m4a" preload="auto"></audio>
+  <button id="b" onclick="a.paused?a.play():a.pause()">▶ Play</button>
+  <div id="c">Chanted 0 times</div>
+  <div id="credit">recording from our dharma siblings at <a href="https://zmm.org/liturgy/">Zen Mountain Monastery</a></div>
+  <script>
+    let n = 0;
+    a.onplay  = () => b.textContent = '⏸ Pause';
+    a.onpause = () => b.textContent = '▶ Play';
+    a.onended = () => {
+      n++;
+      c.textContent = 'Chanted ' + n + (n === 1 ? ' time' : ' times');
+      a.src = 'Verse-of-the-Kesa-2.m4a';
+      a.play();
+    };
+  </script>
+</body>
+</html>
