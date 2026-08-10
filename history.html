@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>alexgodin.com — time machine</title>
+<style>
+  :root{
+    --bg:#0e0e10;
+    --panel:#16161a;
+    --line:#2a2a31;
+    --ink:#e9e9ec;
+    --muted:#8b8b95;
+    --accent:#e0623a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    display:flex;flex-direction:column;min-height:100vh;
+  }
+  header{
+    padding:22px 28px 6px;
+  }
+  header h1{
+    margin:0;font-size:18px;font-weight:700;letter-spacing:-.01em;
+  }
+  header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+
+  /* timeline rail */
+  .rail{
+    position:relative;display:flex;justify-content:space-between;
+    margin:26px 40px 8px;padding-top:6px;
+  }
+  .rail::before{
+    content:"";position:absolute;left:0;right:0;top:13px;height:2px;background:var(--line);
+  }
+  .stop{
+    position:relative;background:none;border:0;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    color:var(--muted);font:inherit;padding:0;flex:0 0 auto;
+  }
+  .stop .dot{
+    width:14px;height:14px;border-radius:50%;background:var(--line);
+    border:2px solid var(--bg);transition:transform .15s,background .15s;
+  }
+  .stop .yr{font-size:13px;font-weight:600;transition:color .15s}
+  .stop:hover .dot{background:var(--muted)}
+  .stop.active .dot{background:var(--accent);transform:scale(1.25)}
+  .stop.active .yr{color:var(--ink)}
+
+  /* caption */
+  .caption{
+    display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+    margin:14px 40px 0;
+  }
+  .caption .date{font-weight:700}
+  .caption .msg{color:var(--ink)}
+  .caption .hash{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12px;color:var(--muted);
+    border:1px solid var(--line);border-radius:5px;padding:1px 7px;
+  }
+  .caption .note{color:var(--muted);font-size:12.5px;font-style:italic}
+
+  /* nav buttons */
+  .nav{display:flex;gap:8px;margin-left:auto}
+  .nav button{
+    background:var(--panel);color:var(--ink);border:1px solid var(--line);
+    border-radius:7px;padding:5px 11px;cursor:pointer;font:inherit;font-size:13px;
+  }
+  .nav button:hover{border-color:var(--muted)}
+  .nav button:disabled{opacity:.35;cursor:default}
+
+  /* browser frame + iframe */
+  .stage{flex:1;display:flex;padding:18px 40px 34px;min-height:0}
+  .browser{
+    flex:1;display:flex;flex-direction:column;
+    border:1px solid var(--line);border-radius:12px;overflow:hidden;
+    background:#fff;box-shadow:0 18px 50px rgba(0,0,0,.45);min-height:0;
+  }
+  .chrome{
+    display:flex;align-items:center;gap:8px;
+    background:var(--panel);border-bottom:1px solid var(--line);
+    padding:9px 13px;flex:0 0 auto;
+  }
+  .chrome .lights{display:flex;gap:6px}
+  .chrome .lights i{width:11px;height:11px;border-radius:50%;display:block}
+  .chrome .lights i:nth-child(1){background:#ff5f57}
+  .chrome .lights i:nth-child(2){background:#febc2e}
+  .chrome .lights i:nth-child(3){background:#28c840}
+  .chrome .url{
+    flex:1;background:var(--bg);color:var(--muted);
+    border-radius:6px;padding:4px 11px;font-size:12px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  iframe{flex:1;width:100%;border:0;background:#fff}
+
+  @media(max-width:640px){
+    .rail,.caption,.stage{margin-left:18px;margin-right:18px}
+    .stage{padding-left:18px;padding-right:18px}
+    .caption{margin-top:12px}
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>alexgodin.com — time machine</h1>
+    <p>Click through the major eras of this homepage, 2012 → today.</p>
+  </header>
+
+  <nav class="rail" id="rail" aria-label="Site history timeline"></nav>
+
+  <div class="caption" id="caption">
+    <span class="date"></span>
+    <span class="hash"></span>
+    <span class="msg"></span>
+    <span class="note"></span>
+    <span class="nav">
+      <button id="prev" aria-label="Previous era">← Prev</button>
+      <button id="next" aria-label="Next era">Next →</button>
+    </span>
+  </div>
+
+  <div class="stage">
+    <div class="browser">
+      <div class="chrome">
+        <span class="lights"><i></i><i></i><i></i></span>
+        <span class="url" id="url">alexgodin.com</span>
+      </div>
+      <iframe id="frame" title="Homepage preview" loading="lazy"></iframe>
+    </div>
+  </div>
+
+<script>
+  const ERAS = [
+    {year:"2012", file:"history/2012.html", date:"Feb 3, 2012",  hash:"5082819", msg:"init", note:"chunky display font over a full-bleed photo (original web font is gone, so it falls back to a system serif)"},
+    {year:"2013", file:"history/2013.html", date:"Apr 3, 2013",  hash:"e153d9e", msg:"add blog link", note:"the chunky-text-over-photo design with “I work on Dispatch” copy"},
+    {year:"2014", file:"history/2014.html", date:"Aug 18, 2014", hash:"567e80e", msg:"colors", note:"the photo takes over the whole page; text shrinks to a small box pinned bottom-left"},
+    {year:"2015", file:"history/2015.html", date:"Nov 3, 2015",  hash:"72d1417", msg:"responsive web design (aka no pictures and no style sheets)", note:"a deliberate strip to plain monospace text"},
+    {year:"2021", file:"history/2021.html", date:"Sep 30, 2021", hash:"dfaf67c", msg:"better wording", note:"the fully-grown monospace era — long “adventures” list, reworked bio"},
+    {year:"2023", file:"history/2023.html", date:"Jun 13, 2023", hash:"45c8234", msg:"new site is done?", note:"the “Founder and Human” multi-section redesign"},
+    {year:"2025", file:"history/2025.html", date:"Mar 17, 2025", hash:"3212350", msg:"update", note:"pivot to a single minimalist bullet-separated bio"},
+    {year:"2026", file:"history/2026.html", date:"Mar 6, 2026",  hash:"94a1e16", msg:"better", note:"the current minimal bio"},
+  ];
+
+  const rail = document.getElementById("rail");
+  const frame = document.getElementById("frame");
+  const url = document.getElementById("url");
+  const cap = document.getElementById("caption");
+  const dEl = cap.querySelector(".date");
+  const hEl = cap.querySelector(".hash");
+  const mEl = cap.querySelector(".msg");
+  const nEl = cap.querySelector(".note");
+  const prevBtn = document.getElementById("prev");
+  const nextBtn = document.getElementById("next");
+
+  let idx = 0;
+
+  ERAS.forEach((e,i)=>{
+    const b = document.createElement("button");
+    b.className = "stop";
+    b.innerHTML = `<span class="dot"></span><span class="yr">${e.year}</span>`;
+    b.addEventListener("click", ()=>go(i));
+    rail.appendChild(b);
+  });
+  const stops = [...rail.querySelectorAll(".stop")];
+
+  function go(i){
+    idx = Math.max(0, Math.min(ERAS.length-1, i));
+    const e = ERAS[idx];
+    frame.src = e.file;
+    url.textContent = "alexgodin.com  ·  " + e.date;
+    dEl.textContent = e.date;
+    hEl.textContent = e.hash;
+    mEl.textContent = "“" + e.msg + "”";
+    nEl.textContent = e.note;
+    stops.forEach((s,j)=>s.classList.toggle("active", j===idx));
+    prevBtn.disabled = idx===0;
+    nextBtn.disabled = idx===ERAS.length-1;
+    history.replaceState(null,"","#"+e.year);
+  }
+
+  prevBtn.addEventListener("click", ()=>go(idx-1));
+  nextBtn.addEventListener("click", ()=>go(idx+1));
+  document.addEventListener("keydown", ev=>{
+    if(ev.key==="ArrowLeft") go(idx-1);
+    if(ev.key==="ArrowRight") go(idx+1);
+  });
+
+  // open to hash if present, else newest
+  const start = ERAS.findIndex(e=>"#"+e.year===location.hash);
+  go(start>=0 ? start : ERAS.length-1);
+</script>
+</body>
+</html>

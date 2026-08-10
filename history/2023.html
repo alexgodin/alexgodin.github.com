@@ -1,0 +1,238 @@
+<!doctype html>
+<html>
+<head>
+  <base href="../">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Alex Godin</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;700&display=swap" rel="stylesheet">
+	<style>
+:root{
+	--black:#191923;
+	--blue:#90DDF0;
+	--green:#7DB58D;
+	--dark-green:#437551;
+	--pink: #FDD5C4;
+	--brown:#763004;
+}
+
+
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+
+body{
+	font-family: 'Work Sans', sans-serif;
+}
+
+
+section{
+	padding-top: 50px;
+	padding-bottom: 50px;
+}
+
+.one{
+	padding-top: 200px;
+	padding-bottom: 200px;
+}
+
+.inner{
+	max-width: 800px;
+	margin-left: auto;
+	margin-right: auto;
+}
+.one, .three{
+	background: var(--pink);
+	color: var(--brown);
+}
+
+.two, .four{
+	background: var(--brown);
+	color:var(--pink);
+}
+
+.heading h1, .four h1{
+	margin-bottom:0;
+}
+
+h1{
+	font-size: 5em;
+	font-weight:700;
+	line-height: .8;
+}
+
+h2{
+	font-size: 5em;
+	font-weight: 300;
+	line-height: 1;
+}
+
+h5{
+	font-size: 1em;
+	font-weight:700;
+}
+
+h3{
+	font-size: 1.4em;
+	font-weight: 300;
+}
+
+
+p {
+	font-size:1.4em;
+	font-weight: 300;
+}
+
+ul{
+	display:flex;
+}
+
+.brag{
+	margin-bottom: 50px;
+	border-left: 5px solid;
+	box-sizing: border-box;
+	padding-left: 40px;
+}
+
+
+.brag p{
+	margin-top:10px;
+	margin-bottom:10px;
+}
+
+.three a{
+	color:var(--brown);
+}
+
+a{
+/*	text-decoration: none;*/
+	font-weight: 700;
+	color: var(--pink);
+}
+
+
+h1{
+	margin-bottom: 50px;
+}
+
+/*.button{
+	display:block;
+	background:var(--green);
+	color:var(--black);
+	padding: 5px 5px 5px 5px;
+	margin-top:10px;
+	margin-bottom:10px;
+	text-decoration: none;
+	width: 100px;
+	text-align:center;
+	border-radius:5px;
+} 
+*/
+
+strong{
+	font-weight: 700;
+}
+
+@media screen and (max-width :800px){
+	h1{
+		font-size: 1em;
+	}
+	.one{
+		background: blue;
+	}
+}
+
+</style>
+</head>
+<body>
+	<main>
+		<section class="one">
+			<div class="inner heading">
+				<h1>Alex Godin,</h1>
+				<h2>Founder and Human.</h2>
+			</div>
+		</section>
+		<section class="two">
+			<div class="inner">
+				<h1>Founder.</h1>
+				<!-- <h3>Raised Millions of Dollars. Helped Hundreds of Thousands of People.</h3> -->
+				<div class="brag">
+					<h3><strong>Non-profit Lemontree connects more than 100,000 households in need to free food.</strong></h3>
+					<p>There are more food pantries in the US than McDonalds. Yet, the vast majority of folks experiencing hunger don't access these resources. Our product connects these neighbors in need to free food in their backyard through a text message helpline. At our core we believe in fighting stigma and shame with respect and hospitality. </p>
+					<a href="http://foodhelpline.org/donate" class="button">Learn More</a>
+				</div>
+				<div class="brag">
+					<h3><strong>In It Together rallied 35,000 hours of volunteer service in the midst of a global pandemic.</strong></h3>
+					<p>When the world shut down in March of 2020, critical volunteers stopped showing up to the food pantries and soup kitchens that feed our beloved city. With these resources at risk of closing, we launched a volunteer drive to bring out healthy volunteers and keep these organizations open.</p>
+					<a href="https://civileats.com/2020/05/06/meet-the-new-york-city-volunteers-risking-their-lives-to-feed-people/"> Learn More</a>
+				</div>
+				<div class="brag">
+					<h3><strong>The Love-A-Thon brought 65 celebrities together to raise $250,000 in four hours.</strong></h3>
+					<p>With Donald Trump newly elected and progressive causes under attack, our small group of friends decided to raise money for the ACLU, Planned Parenthood and Earth Justice. Our Facebook Live telethon featured dozens of celebrities from Jane Fonda to Joseph Gordon Levitt and raised more than $250,000 in a time of great need.</p>
+					<a href="http://mashable.com/2017/01/20/love-a-thon-facebook-live-inauguration/#QG5lTtJ3oEqC"> Learn More</a>
+				</div>
+				<h3><strong>Also,</strong> $2 meal-kits for low-income families, team collaboration software for creative teams, workplace-chat consulting for large enterprises, pig roasts, adult summer camps, hand painted oil paintings of emojis and a nacho stand...
+			</div>
+		</section>
+		<section class="three">
+			<div class="inner">
+				<h1>Human Being.</h1>
+				<div class="brag">
+					<h3><strong>Obsessive reader with an unlimited book buying budget.</strong></h3>
+					<p>I try to read between twenty and thirty books per year. Since 2015, I've kept notes of every book I've read. You can see my recommendations at the link below.</p>
+					<a href="./books"> Learn More</a>
+				</div>
+				<div class="brag">
+					<h3><strong>Zen student at the New York Zen Center for Contemplative Care.</strong></h3>
+					<p>Zen practice with my teacher Koshin Paley-Ellison and our sangha helps me hold my seat, feel my feelings and be more me.</p>
+					<a href="http://zencare.org"> Learn More</a>
+				</div>
+				<div class="brag">
+					<h3><strong>Relational Psychodynamic Therapy twice a week, every week.</strong></h3>
+					<p>In partnership with an exceptional therapist, I am doing the work of integrating and befriending every part of myself and my experiences.</p>
+				</div>
+				<div class="brag">
+					<h3><strong>Lover of hiking alone.</strong></h3>
+					<p>In 2023, I took a two month sabbatical. The highlight was a week long solo backpacking trip accross the desert that I called the Sad Cowboy Traverse.</p>
+					<a href="./sad_cowboy"> Learn More</a>
+				</div>
+				<h3><strong>Also,</strong> cooking dinner for my amazing wife, running in Prospect Park, sewing my own backpacks, member of the Park Slope Food Co-op, frequent diner at Superiority Burger and Romans...
+			</div>
+		</section>
+		<section class="four">
+			<div class="inner">
+			<h1>Get In Touch:</h1>
+			<h2>alex@alexgodin.com</h2>
+			</div>
+		</section>
+	</main>	
+</body>
+</html>
