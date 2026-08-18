@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Names of the Sick &amp; Recently Deceased</title>
 <style>
+  @font-face{font-family:"Nexa";src:url("fonts/NexaBook.otf") format("opentype");font-weight:400;font-style:normal;font-display:swap;}
+  @font-face{font-family:"Nexa";src:url("fonts/Nexa-RegularItalic.otf") format("opentype");font-weight:400;font-style:italic;font-display:swap;}
+  @font-face{font-family:"Nexa";src:url("fonts/Nexa-Bold.otf") format("opentype");font-weight:700;font-style:normal;font-display:swap;}
+  @font-face{font-family:"Nexa";src:url("fonts/NexaXBold.otf") format("opentype");font-weight:800;font-style:normal;font-display:swap;}
   :root{
     --ink:#1f1b16; --muted:#6f665b; --rule:#ddd6ca; --band:#f6f2ea;
     --accent:#7a5c3e; --accent2:#4a6d5f; --bg:#ffffff;
@@ -12,7 +16,7 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    font-family:"Nexa","Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
     color:var(--ink); background:#efe9df; line-height:1.35; font-size:20px;
     -webkit-font-smoothing:antialiased;
   }
@@ -34,7 +38,8 @@
   .sheet{max-width:1040px;margin:16px auto 40px;background:var(--bg);
     padding:44px 52px 56px;box-shadow:0 2px 18px rgba(0,0,0,.12);border-radius:2px;}
   header.doc{text-align:center;border-bottom:2px solid var(--accent);padding-bottom:18px;margin-bottom:30px;}
-  header.doc h1{font-size:34px;font-weight:600;letter-spacing:.02em;margin:0 0 8px;}
+  header.doc .logo{display:block;height:64px;width:auto;margin:0 auto 16px;}
+  header.doc h1{font-size:34px;font-weight:800;letter-spacing:.01em;margin:0 0 8px;}
   header.doc .sub{color:var(--muted);font-size:17px;font-style:italic;margin:0;}
   .area{margin-bottom:22px;}
   .area:last-child{margin-bottom:0;}
@@ -67,6 +72,7 @@
     .toolbar{display:none;}
     .sheet{max-width:none;margin:0;padding:0;box-shadow:none;border-radius:0;}
     header.doc{margin-bottom:10px;padding-bottom:8px;} header.doc h1{font-size:20pt;margin-bottom:4px;}
+    header.doc .logo{height:42px;margin-bottom:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     header.doc .sub{font-size:11pt;}
     .area{margin-bottom:12px;}                 /* sick flows right after deceased, no forced page break */
     .area-head{margin-bottom:6px;padding-bottom:3px;}
@@ -89,6 +95,7 @@
 </div>
 <div class="sheet">
   <header class="doc">
+    <img class="logo" src="nyzc-logo.png" alt="New York Zen Center">
     <h1>Names of the Sick &amp; Recently Deceased</h1>
     <p class="sub" id="asof"></p>
   </header>
