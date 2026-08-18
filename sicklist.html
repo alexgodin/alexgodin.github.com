@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Names of the Sick &amp; Recently Deceased</title>
+<style>
+  :root{
+    --ink:#1f1b16; --muted:#6f665b; --rule:#ddd6ca; --band:#f6f2ea;
+    --accent:#7a5c3e; --accent2:#4a6d5f; --bg:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    color:var(--ink); background:#efe9df; line-height:1.35; font-size:20px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .toolbar{max-width:1040px;margin:0 auto;padding:16px 20px 0;
+    display:flex;gap:12px;align-items:center;justify-content:flex-end;}
+  .toolbar .status{margin-right:auto;
+    font:14px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#5c5347;}
+  .toolbar .toggle{font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#5c5347;
+    display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;}
+  .toolbar .toggle input{width:17px;height:17px;cursor:pointer;accent-color:var(--accent);}
+  button.print{font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--accent);color:#fff;border:0;padding:11px 20px;border-radius:6px;cursor:pointer;}
+  button.print:hover{background:#63482f;}
+  /* sick-list summary shown in place of names when "skip" is on */
+  .sick-summary{display:none;font-size:21px;line-height:1.45;margin:2px 0 0;max-width:64ch;}
+  body.hide-sick .sick-list{display:none;}
+  body.hide-sick .sick-summary{display:block;}
+  .sheet{max-width:1040px;margin:16px auto 40px;background:var(--bg);
+    padding:44px 52px 56px;box-shadow:0 2px 18px rgba(0,0,0,.12);border-radius:2px;}
+  header.doc{text-align:center;border-bottom:2px solid var(--accent);padding-bottom:18px;margin-bottom:30px;}
+  header.doc h1{font-size:34px;font-weight:600;letter-spacing:.02em;margin:0 0 8px;}
+  header.doc .sub{color:var(--muted);font-size:17px;font-style:italic;margin:0;}
+  .area{margin-bottom:22px;}
+  .area:last-child{margin-bottom:0;}
+  .area-head{display:flex;align-items:baseline;gap:14px;margin:0 0 10px;
+    border-bottom:1.5px solid var(--rule);padding-bottom:5px;}
+  .area-head h2{font-size:25px;font-weight:600;margin:0;}
+  .area.deceased .area-head h2{color:var(--accent);}
+  .area.ill .area-head h2{color:var(--accent2);}
+  .area-head .cnt{font:14px system-ui,-apple-system,sans-serif;color:var(--muted);}
+  .grid2{column-count:2;column-gap:44px;}
+  .area.deceased .grid2{column-count:1;}     /* deceased list: single column */
+  .entry{break-inside:avoid;-webkit-column-break-inside:avoid;
+    padding:4px 0;border-bottom:1px solid #ece6db;}
+  /* deceased: full ceremony sentence, large */
+  .entry.line{font-size:22px;line-height:1.25;}
+  .entry.line .nm{font-weight:600;}
+  .entry.line .day{font-weight:600;color:var(--accent);}
+  .entry.line .sp{font-style:italic;color:var(--muted);}
+  /* sick: name + referral, inline */
+  .entry .nm{font-size:22px;font-weight:600;line-height:1.25;}
+  .entry .sp2{font-size:16px;font-style:italic;font-weight:400;color:var(--muted);}
+  .entry.sick .ref-inline{font-size:17px;font-weight:400;color:#5b5248;}
+  @media (max-width:720px){
+    body{font-size:19px;} .sheet{padding:26px 20px 36px;}
+    .grid2{column-count:1;} header.doc h1{font-size:27px;}
+  }
+  @media print{
+    @page{margin:10mm;}
+    body{background:#fff;font-size:13pt;line-height:1.2;}
+    .toolbar{display:none;}
+    .sheet{max-width:none;margin:0;padding:0;box-shadow:none;border-radius:0;}
+    header.doc{margin-bottom:10px;padding-bottom:8px;} header.doc h1{font-size:20pt;margin-bottom:4px;}
+    header.doc .sub{font-size:11pt;}
+    .area{margin-bottom:12px;}                 /* sick flows right after deceased, no forced page break */
+    .area-head{margin-bottom:6px;padding-bottom:3px;}
+    .area-head h2{color:#000 !important;font-size:15pt;}
+    .grid2{column-count:2;column-gap:30px;}
+    .area.deceased .grid2{column-count:1;}    /* deceased: single column */
+    .entry{break-inside:avoid;padding:2px 0;}
+    .entry.line{font-size:13pt;line-height:1.18;} .entry .nm{font-size:13pt;}
+    .entry .sp2,.entry.sick .ref-inline{font-size:11pt;}
+    .entry.line .day{color:#000;}
+    .sick-summary{font-size:13pt;}
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <span class="status" id="status">Loading…</span>
+  <label class="toggle"><input type="checkbox" id="skipSick"> Skip the sick list</label>
+  <button class="print" onclick="window.print()">Print</button>
+</div>
+<div class="sheet">
+  <header class="doc">
+    <h1>Names of the Sick &amp; Recently Deceased</h1>
+    <p class="sub" id="asof"></p>
+  </header>
+  <div id="content"></div>
+</div>
+<script>
+/* ============================================================
+   Live source: one Google Spreadsheet with two tabs.
+   Columns are read BY HEADER NAME (order doesn't matter):
+     Recently Deceased tab: Name | Spelling | Date | Pronouns  (+ any others)
+     Sick tab:              Name | Spelling | Referred By | Relationship
+   Pronouns holds his / her / their (used for "...the Nth day of ___ passing").
+   The spreadsheet must be shared "Anyone with the link - Viewer".
+   ============================================================ */
+const SHEET_ID = "1EF5AopbqciIzcT3F2OSDTP5mJZGq2kvy-RvVJ2IfCHE";
+
+/* Which tab is which. gid is the number in the sheet URL (…#gid=NUMBER).
+   Deceased gid is known from your link; Sick uses the first tab by default. */
+const DECEASED_GID = "884354908";
+const SICK_GID = null;                 // null = first tab
+
+/* Deceased are shown until the 50th day of passing, then drop off. */
+const DROP_AFTER_DAYS = 50;
+
+function esc(s){ return (s||"").replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m])); }
+
+/* Load a tab via gviz JSONP (a <script> include, so it is NOT subject to the
+   CORS restriction that blocks the plain CSV endpoint). Works with a sheet
+   shared "Anyone with the link - Viewer"; no "Publish to web" needed. */
+function jsonp(gid, cbName){
+  return new Promise((resolve,reject)=>{
+    const s=document.createElement("script");
+    let done=false;
+    function cleanup(){ clearTimeout(timer); try{delete window[cbName];}catch(e){window[cbName]=undefined;} s.remove(); }
+    const timer=setTimeout(()=>{ if(!done){done=true; cleanup(); reject(new Error("timeout")); } },15000);
+    window[cbName]=(resp)=>{ if(done) return; done=true; cleanup(); resolve(resp); };
+    s.onerror=()=>{ if(!done){done=true; cleanup(); reject(new Error("script blocked")); } };
+    let u="https://docs.google.com/spreadsheets/d/"+SHEET_ID+
+          "/gviz/tq?headers=1&tqx=out:json;responseHandler:"+cbName;
+    if(gid) u+="&gid="+gid;
+    s.src=u;
+    document.head.appendChild(s);
+  });
+}
+/* gviz JSON -> objects keyed by header label; dates use the formatted (.f) value. */
+function tableToObjects(resp){
+  const t=resp && resp.table; if(!t) return [];
+  const cols=t.cols.map(c=>((c.label||"")+"").trim().toLowerCase());
+  const pick=(o,...names)=>{ for(const n of names){ if(o[n]!=null && o[n]!=="") return o[n]; } return ""; };
+  return (t.rows||[]).map(r=>{
+    const o={};
+    (r.c||[]).forEach((cell,i)=>{ o[cols[i]] = cell ? (cell.f!=null?cell.f:(cell.v!=null?cell.v:"")) : ""; });
+    return {
+      name:(pick(o,"name")+"").trim(),
+      spelling:(pick(o,"spelling")+"").trim(),
+      date:(pick(o,"date")+"").trim(),
+      member:(pick(o,"referred by","referred")+"").trim(),
+      rel:(pick(o,"relationship")+"").trim(),
+      pronoun:(pick(o,"pronouns","pronoun")+"").trim()
+    };
+  }).filter(x=>x.name);
+}
+
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function parseDate(s){
+  if(!s) return null; s=(""+s).trim();
+  let m=s.match(/^Date\((\d+),(\d+),(\d+)/);          // gviz raw form: Date(2026,5,30)
+  if(m){ return new Date(+m[1],+m[2],+m[3]); }
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if(m){ let y=+m[3]; if(y<100) y+=2000; return new Date(y,+m[1]-1,+m[2]); }
+  const d=new Date(s); return isNaN(d)?null:d;
+}
+function ordinal(n){ const s=["th","st","nd","rd"],v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); }
+function daysOfPassing(d){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const t=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  return Math.floor((today-t)/86400000)+1;   // day of passing = day 1
+}
+function referral(member, rel){
+  if(member && rel) return esc(member)+"’s "+esc(rel);
+  return esc(member||rel||"");
+}
+
+/* Deceased: full ceremony sentence "NAME on this the Nth day of PRONOUN passing" */
+function deceasedHTML(o){
+  const d=parseDate(o.date);
+  const sp = o.spelling ? ' <span class="sp">('+esc(o.spelling)+')</span>' : '';
+  const pronoun = esc((o.pronoun||"their").trim().toLowerCase());
+  if(d){
+    const n=daysOfPassing(d);
+    if(n>=DROP_AFTER_DAYS) return "";                 // 50+ days: no longer shown
+    return '<div class="entry line"><span class="nm">'+esc(o.name)+'</span>'+sp+
+           ' on this the <span class="day">'+ordinal(n)+'</span> day of '+pronoun+' passing</div>';
+  }
+  /* no date: show the name without a day count */
+  return '<div class="entry line"><span class="nm">'+esc(o.name)+'</span>'+sp+'</div>';
+}
+
+/* Sick: name + who referred them, on one line */
+function sickHTML(o){
+  const ref=referral(o.member, o.rel);
+  const sp = o.spelling ? ' <span class="sp2">('+esc(o.spelling)+')</span>' : '';
+  const tail = ref ? ' <span class="ref-inline">— '+ref+'</span>' : '';
+  return '<div class="entry sick"><span class="nm">'+esc(o.name)+'</span>'+sp+tail+'</div>';
+}
+
+const SICK_SUMMARY = "And for those who are living with illness, including all sangha members, friends, and family members.";
+
+/* Sort deceased by date of passing, most recent first.
+   (Change db-da to da-db to reverse to oldest-first.) */
+function sortByPassing(list){
+  return list.slice().sort((a,b)=>{
+    const da=parseDate(a.date), db=parseDate(b.date);
+    if(!da && !db) return 0;
+    if(!da) return 1;            // undated go last
+    if(!db) return -1;
+    return db - da;             // most recent passing first
+  });
+}
+function render(deceased, sick){
+  const dec = sortByPassing(deceased).map(deceasedHTML).filter(Boolean);
+  const sic = sick.map(sickHTML).filter(Boolean);
+  const deceasedArea =
+      '<section class="area deceased"><div class="area-head"><h2>Recently Deceased</h2></div>'
+    + '<div class="grid2">'+dec.join("")+'</div></section>';
+  const illArea =
+      '<section class="area ill"><div class="area-head"><h2>And for those who are ill, including:</h2></div>'
+    + '<div class="grid2 sick-list">'+sic.join("")+'</div>'
+    + '<p class="sick-summary">'+esc(SICK_SUMMARY)+'</p></section>';
+  document.getElementById("content").innerHTML = deceasedArea + illArea;
+}
+function setAsOf(){
+  const d=new Date();
+  document.getElementById("asof").textContent =
+    "As of "+d.toLocaleDateString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+}
+async function load(){
+  setAsOf();
+  const status=document.getElementById("status");
+  if(!SHEET_ID){ document.getElementById("content").innerHTML=""; status.textContent="No sheet configured."; return; }
+  try{
+    const [decResp, sickResp] = await Promise.all([ jsonp(DECEASED_GID,"__cbDeceased"), jsonp(SICK_GID,"__cbSick") ]);
+    const deceased = tableToObjects(decResp);
+    const sick     = tableToObjects(sickResp);
+    render(deceased, sick);
+    status.textContent="Live from Google Sheets";
+  }catch(err){
+    document.getElementById("content").innerHTML="";   // no fallback: show nothing on failure
+    status.textContent="Couldn't reach the sheet. ("+err.message+")";
+  }
+}
+document.getElementById("skipSick").addEventListener("change",function(e){
+  document.body.classList.toggle("hide-sick", e.target.checked);
+});
+load();
+</script>
+</body>
+</html>
