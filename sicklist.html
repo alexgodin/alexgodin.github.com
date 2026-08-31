@@ -49,12 +49,19 @@
   .area.deceased .area-head h2{color:var(--accent);}
   .area.ill .area-head h2{color:var(--accent2);}
   .area-head .cnt{font:14px system-ui,-apple-system,sans-serif;color:var(--muted);}
-  /* Two side-by-side columns built in HTML rather than CSS column-count:
+  /* Side-by-side columns built in HTML (splitCols in the script below)
+     rather than CSS column-count, and floated rather than flexed:
      WebKit (notably iOS Safari) often collapses multicol layouts to a
-     single column when printing, so we split the list into two .col
-     divs and lay them out with flexbox instead. */
-  .grid2{display:flex;gap:44px;}
-  .grid2 .col{flex:1;min-width:0;}
+     single column when printing, and Firefox refuses to paginate a
+     flex container that's taller than one page (content past page 1
+     just doesn't print). Floats have always supported breaking across
+     printed pages reliably in every engine. */
+  .grid2{overflow:hidden;}
+  .grid2 .col{float:left;box-sizing:border-box;width:calc(50% - 22px);margin-right:44px;}
+  .grid2 .col:nth-child(2n){margin-right:0;}
+  .grid3{overflow:hidden;}
+  .grid3 .col{float:left;box-sizing:border-box;width:calc((100% - 40px)/3);margin-right:20px;}
+  .grid3 .col:nth-child(3n){margin-right:0;}
   .entry{break-inside:avoid;padding:4px 0;border-bottom:1px solid #ece6db;}
   /* deceased: full ceremony sentence, large */
   .entry.line{font-size:22px;line-height:1.25;}
@@ -70,7 +77,6 @@
      page. The contact's name is the prominent bit (they're who needs to
      act); the sick person's name underneath is de-emphasized. */
   .report-sheet{padding:20px 28px 22px;}
-  .report-sheet .grid2{gap:20px;}
   .report-sheet header.doc{padding-bottom:6px;margin-bottom:10px;}
   .report-sheet header.doc .logo{height:32px;margin-bottom:5px;}
   .report-sheet header.doc h1{font-size:20px;margin-bottom:2px;}
@@ -86,7 +92,8 @@
   @media screen and (max-width:720px){
     body{font-size:19px;} .sheet{padding:26px 20px 36px;}
     header.doc h1{font-size:27px;}
-    .grid2{flex-direction:column;gap:0;}       /* stack columns on a phone screen */
+    /* stack columns on a phone screen */
+    .grid2 .col,.grid3 .col{float:none;width:100%;margin-right:0;}
   }
   @media print{
     @page{margin:10mm;}
@@ -100,13 +107,13 @@
     .area{margin-bottom:12px;}                 /* sick flows right after deceased, no forced page break */
     .area-head{margin-bottom:6px;padding-bottom:3px;}
     .area-head h2{color:#000 !important;font-size:15pt;}
-    .grid2{gap:30px;}
+    .grid2 .col{width:calc(50% - 15px);margin-right:30px;}
     .entry{break-inside:avoid;padding:2px 0;}
     .entry.line{font-size:13pt;line-height:1.18;} .entry .nm{font-size:13pt;}
     .entry .sp2,.entry.sick .ref-inline{font-size:11pt;}
     .entry.line .day{color:#000;}
     .sick-summary{font-size:13pt;}
-    .report-sheet .grid2{gap:18px;}
+    .grid3 .col{width:calc((100% - 36px)/3);margin-right:18px;}
     .checkin-group .contact-name{color:#000 !important;}
   }
 </style>
@@ -290,7 +297,7 @@ function reportHTML(sick){
     + '<img class="logo" src="nyzc-logo.png" alt="New York Zen Center">'
     + '<h1>Check-In Report</h1>'
     + '<p class="sub">Not checked on in the last 6 weeks (or ever), grouped by contact</p></header>'
-    + '<div class="grid2">'+splitCols(groupObjs,3)+'</div></div>';
+    + '<div class="grid3">'+splitCols(groupObjs,3)+'</div></div>';
 }
 
 /* Sort deceased by date of passing, most recent first.
@@ -325,7 +332,7 @@ function render(deceased, sick){
   const sic = sick.map(sickHTML).filter(e=>e.html);
   const deceasedArea =
       '<section class="area deceased"><div class="area-head"><h2>Recently Deceased</h2></div>'
-    + '<div class="grid2"><div class="col">'+dec.join("")+'</div></div></section>';
+    + dec.join("") + '</section>';
   const illArea =
       '<section class="area ill"><div class="area-head"><h2>And for those who are ill, including:</h2></div>'
     + '<div class="grid2 sick-list">'+twoCols(sic)+'</div>'
