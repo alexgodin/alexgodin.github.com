@@ -65,6 +65,10 @@
   .entry .nm{font-size:22px;font-weight:600;line-height:1.25;}
   .entry .sp2{font-size:16px;font-style:italic;font-weight:400;color:var(--muted);}
   .entry.sick .ref-inline{font-size:17px;font-weight:400;color:#5b5248;}
+  /* front-page check-in report: sick-list entries not contacted in 6+ weeks */
+  .entry.checkin{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .entry.checkin .status{font-size:16px;font-weight:600;color:var(--accent);white-space:nowrap;}
+  .entry.checkin .status.never{color:#a1443d;}
   @media screen and (max-width:720px){
     body{font-size:19px;} .sheet{padding:26px 20px 36px;}
     header.doc h1{font-size:27px;}
@@ -75,6 +79,7 @@
     body{background:#fff;font-size:13pt;line-height:1.2;}
     .toolbar{display:none;}
     .sheet{max-width:none;margin:0;padding:0;box-shadow:none;border-radius:0;}
+    .report-sheet{page-break-after:always;break-after:page;}
     header.doc{margin-bottom:10px;padding-bottom:8px;} header.doc h1{font-size:20pt;margin-bottom:4px;}
     header.doc .logo{height:42px;margin-bottom:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     header.doc .sub{font-size:11pt;}
@@ -87,6 +92,7 @@
     .entry .sp2,.entry.sick .ref-inline{font-size:11pt;}
     .entry.line .day{color:#000;}
     .sick-summary{font-size:13pt;}
+    .entry.checkin .status{font-size:11pt;color:#000 !important;}
   }
 </style>
 </head>
@@ -96,6 +102,7 @@
   <label class="toggle"><input type="checkbox" id="skipSick"> Skip the sick list</label>
   <button class="print" onclick="window.print()">Print</button>
 </div>
+<div id="reportSheet"></div>
 <div class="sheet">
   <header class="doc">
     <img class="logo" src="nyzc-logo.png" alt="New York Zen Center">
@@ -109,8 +116,9 @@
    Live source: one Google Spreadsheet with two tabs.
    Columns are read BY HEADER NAME (order doesn't matter):
      Recently Deceased tab: Name | Spelling | Date | Pronouns  (+ any others)
-     Sick tab:              Name | Spelling | Referred By | Relationship
+     Sick tab:              Name | Spelling | Added | Referred By | Relationship | Last contacted
    Pronouns holds his / her / their (used for "...the Nth day of ___ passing").
+   Last contacted (blank if never) drives the front-page check-in report.
    The spreadsheet must be shared "Anyone with the link - Viewer".
    ============================================================ */
 const SHEET_ID = "1EF5AopbqciIzcT3F2OSDTP5mJZGq2kvy-RvVJ2IfCHE";
@@ -157,7 +165,9 @@ function tableToObjects(resp){
       date:(pick(o,"date")+"").trim(),
       member:(pick(o,"referred by","referred")+"").trim(),
       rel:(pick(o,"relationship")+"").trim(),
-      pronoun:(pick(o,"pronouns","pronoun")+"").trim()
+      pronoun:(pick(o,"pronouns","pronoun")+"").trim(),
+      added:(pick(o,"added")+"").trim(),
+      lastContacted:(pick(o,"last contacted","last contact","contacted")+"").trim()
     };
   }).filter(x=>x.name);
 }
@@ -176,6 +186,11 @@ function daysOfPassing(d){
   const today=new Date(); today.setHours(0,0,0,0);
   const t=new Date(d.getFullYear(),d.getMonth(),d.getDate());
   return Math.floor((today-t)/86400000)+1;   // day of passing = day 1
+}
+function daysSince(d){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const t=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  return Math.floor((today-t)/86400000);
 }
 function referral(member, rel){
   if(member && rel) return esc(member)+"’s "+esc(rel);
@@ -213,6 +228,36 @@ function sickHTML(o){
 }
 
 const SICK_SUMMARY = "And for those who are living with illness, including all sangha members, friends, and family members.";
+
+/* Front-page check-in report: sick-list entries with no "Last contacted"
+   date, or one older than 6 weeks, sorted most-overdue (never = top) first. */
+const CHECKIN_STALE_DAYS = 42;
+function checkinReport(sick){
+  return sick.map(o=>({o, days:(d=>d?daysSince(d):null)(parseDate(o.lastContacted))}))
+    .filter(x=>x.days===null || x.days>=CHECKIN_STALE_DAYS)
+    .sort((a,b)=>{
+      if(a.days===null || b.days===null) return (b.days===null)-(a.days===null);
+      return b.days - a.days;
+    });
+}
+function reportHTML(sick){
+  const overdue = checkinReport(sick);
+  if(!overdue.length) return "";
+  const rows = overdue.map(({o,days})=>{
+    const ref = referral(o.member, o.rel);
+    const sp = o.spelling ? ' <span class="sp2">('+esc(o.spelling)+')</span>' : '';
+    const status = days===null
+      ? '<span class="status never">Never checked on</span>'
+      : '<span class="status">Checked on '+days+' days ago</span>';
+    return '<div class="entry checkin"><span><span class="nm">'+esc(o.name)+'</span>'+sp+
+           (ref?' <span class="ref-inline">— '+ref+'</span>':'')+'</span>'+status+'</div>';
+  }).join("");
+  return '<div class="sheet report-sheet"><header class="doc">'
+    + '<img class="logo" src="nyzc-logo.png" alt="New York Zen Center">'
+    + '<h1>Check-In Report</h1>'
+    + '<p class="sub">Sick-list names not checked on in the last 6 weeks (or ever)</p></header>'
+    + '<div class="checkin-list">'+rows+'</div></div>';
+}
 
 /* Sort deceased by date of passing, most recent first.
    (Change db-da to da-db to reverse to oldest-first.) */
@@ -265,9 +310,11 @@ async function load(){
     const deceased = tableToObjects(decResp);
     const sick     = tableToObjects(sickResp);
     render(deceased, sick);
+    document.getElementById("reportSheet").innerHTML = reportHTML(sick);
     status.textContent="Live from Google Sheets";
   }catch(err){
     document.getElementById("content").innerHTML="";   // no fallback: show nothing on failure
+    document.getElementById("reportSheet").innerHTML="";
     status.textContent="Couldn't reach the sheet. ("+err.message+")";
   }
 }
