@@ -65,28 +65,24 @@
   .entry .nm{font-size:22px;font-weight:600;line-height:1.25;}
   .entry .sp2{font-size:16px;font-style:italic;font-weight:400;color:var(--muted);}
   .entry.sick .ref-inline{font-size:17px;font-weight:400;color:#5b5248;}
-  /* front-page check-in report: entries grouped by contact/referrer, two
-     columns, tight spacing throughout — this is a working checklist, not
-     a formal page, so it should be as compact as possible.
-     The contact's name is the prominent bit (they're who needs to act);
-     the sick person's name underneath is de-emphasized. */
-  .report-sheet{padding:24px 32px 28px;}
-  .report-sheet .grid2{gap:28px;}
-  .report-sheet header.doc{padding-bottom:8px;margin-bottom:12px;}
-  .report-sheet header.doc .logo{height:38px;margin-bottom:6px;}
-  .report-sheet header.doc h1{font-size:23px;margin-bottom:3px;}
-  .report-sheet header.doc .sub{font-size:13px;}
-  .checkin-group{margin-bottom:8px;break-inside:avoid;}
+  /* front-page check-in report: entries grouped by contact/referrer, three
+     columns, tight spacing throughout — sized to fit on a single printed
+     page. The contact's name is the prominent bit (they're who needs to
+     act); the sick person's name underneath is de-emphasized. */
+  .report-sheet{padding:20px 28px 22px;}
+  .report-sheet .grid2{gap:20px;}
+  .report-sheet header.doc{padding-bottom:6px;margin-bottom:10px;}
+  .report-sheet header.doc .logo{height:32px;margin-bottom:5px;}
+  .report-sheet header.doc h1{font-size:20px;margin-bottom:2px;}
+  .report-sheet header.doc .sub{font-size:12px;}
+  .checkin-group{margin-bottom:6px;break-inside:avoid;}
   .checkin-group:last-child{margin-bottom:0;}
-  .checkin-group .contact-name{font-size:16px;font-weight:800;color:var(--accent);
+  .checkin-group .contact-name{font-size:14px;font-weight:800;color:var(--accent);
     margin:0 0 1px;}
-  .entry.checkin{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;
-    padding:0;border-bottom:0;line-height:1.3;}
-  .entry.checkin .nm{font-size:13px;font-weight:600;}
-  .entry.checkin .sp2{font-size:11px;}
-  .entry.checkin .ref-inline{font-size:11px;}
-  .entry.checkin .status{font-size:12px;font-weight:700;color:var(--accent2);white-space:nowrap;}
-  .entry.checkin .status.never{color:#a1443d;}
+  .entry.checkin{padding:0;border-bottom:0;line-height:1.25;}
+  .entry.checkin .nm{font-size:12px;font-weight:600;}
+  .entry.checkin .sp2{font-size:10px;}
+  .entry.checkin .ref-inline{font-size:10px;}
   @media screen and (max-width:720px){
     body{font-size:19px;} .sheet{padding:26px 20px 36px;}
     header.doc h1{font-size:27px;}
@@ -110,9 +106,8 @@
     .entry .sp2,.entry.sick .ref-inline{font-size:11pt;}
     .entry.line .day{color:#000;}
     .sick-summary{font-size:13pt;}
-    .report-sheet .grid2{gap:24px;}
+    .report-sheet .grid2{gap:18px;}
     .checkin-group .contact-name{color:#000 !important;}
-    .entry.checkin .status{color:#000 !important;}
   }
 </style>
 </head>
@@ -250,25 +245,24 @@ function sickHTML(o){
 const SICK_SUMMARY = "And for those who are living with illness, including all sangha members, friends, and family members.";
 
 /* Front-page check-in report: sick-list entries with no "Last contacted"
-   date, or one older than 6 weeks, most-overdue (never = top) first. */
+   date, or one older than 6 weeks. No day-counts are shown — the point
+   is just the list of who to check on. */
 const CHECKIN_STALE_DAYS = 42;
 function checkinReport(sick){
-  return sick.map(o=>({o, days:(d=>d?daysSince(d):null)(parseDate(o.lastContacted))}))
-    .filter(x=>x.days===null || x.days>=CHECKIN_STALE_DAYS)
-    .sort((a,b)=>{
-      if(a.days===null || b.days===null) return (b.days===null)-(a.days===null);
-      return b.days - a.days;
-    });
+  return sick.filter(o=>{
+    const d=parseDate(o.lastContacted);
+    return !d || daysSince(d)>=CHECKIN_STALE_DAYS;
+  });
 }
 /* Grouped by contact (Referred By), since it's that person who needs to
    act on the list. Groups sort alphabetically by contact name, with
    entries with no contact listed pushed to the end. */
 function groupByContact(overdue){
   const groups=new Map();
-  overdue.forEach(item=>{
-    const key=item.o.member||"No contact listed";
+  overdue.forEach(o=>{
+    const key=o.member||"No contact listed";
     if(!groups.has(key)) groups.set(key,[]);
-    groups.get(key).push(item);
+    groups.get(key).push(o);
   });
   return groups;
 }
@@ -282,24 +276,21 @@ function reportHTML(sick){
     return a.localeCompare(b);
   });
   const groupObjs = keys.map(k=>{
-    const items = groups.get(k);
-    const rows = items.map(({o,days})=>{
+    const items = groups.get(k).slice().sort((a,b)=>a.name.localeCompare(b.name));
+    const rows = items.map(o=>{
       const sp = o.spelling ? ' <span class="sp2">('+esc(o.spelling)+')</span>' : '';
       const relTag = o.rel ? ' <span class="ref-inline">— '+esc(o.rel)+'</span>' : '';
-      const status = days===null
-        ? '<span class="status never">Never checked on</span>'
-        : '<span class="status">Checked on '+days+' days ago</span>';
-      return '<div class="entry checkin"><span><span class="nm">'+esc(o.name)+'</span>'+sp+relTag+'</span>'+status+'</div>';
+      return '<div class="entry checkin"><span class="nm">'+esc(o.name)+'</span>'+sp+relTag+'</div>';
     }).join("");
     const html = '<div class="checkin-group"><h3 class="contact-name">'+esc(k)+'</h3>'+rows+'</div>';
-    const weight = k.length + items.length*22;    // heading + ~one row's worth of height each
+    const weight = k.length + items.length*16;    // heading + ~one row's worth of height each
     return {html, weight};
   });
   return '<div class="sheet report-sheet"><header class="doc">'
     + '<img class="logo" src="nyzc-logo.png" alt="New York Zen Center">'
     + '<h1>Check-In Report</h1>'
     + '<p class="sub">Not checked on in the last 6 weeks (or ever), grouped by contact</p></header>'
-    + '<div class="grid2">'+twoCols(groupObjs)+'</div></div>';
+    + '<div class="grid2">'+splitCols(groupObjs,3)+'</div></div>';
 }
 
 /* Sort deceased by date of passing, most recent first.
@@ -313,20 +304,22 @@ function sortByPassing(list){
     return db - da;             // most recent passing first
   });
 }
-/* Split weighted entries {html,weight} into two side-by-side .col divs,
-   breaking at the point where the first column's cumulative weight is
-   closest to half the total, so both print columns end up close to
-   the same length even when a few entries are much longer than others. */
-function twoCols(entries){
-  const total=entries.reduce((s,e)=>s+e.weight,0), target=total/2;
-  let cum=0, idx=entries.length;
+/* Split weighted entries {html,weight} into N side-by-side .col divs,
+   breaking each column at the point where its cumulative weight reaches
+   its even share of the total, so columns end up close to the same
+   length even when a few entries are much longer than others. */
+function splitCols(entries, n){
+  const total=entries.reduce((s,e)=>s+e.weight,0), target=total/n;
+  const cols=[]; let cur=[], cum=0, filled=0;
   for(let i=0;i<entries.length;i++){
-    cum+=entries[i].weight;
-    if(cum>=target){ idx=i+1; break; }
+    cur.push(entries[i]); cum+=entries[i].weight;
+    if(filled<n-1 && cum>=target*(filled+1)){ cols.push(cur); cur=[]; filled++; }
   }
-  return '<div class="col">'+entries.slice(0,idx).map(e=>e.html).join("")+'</div>'
-       + '<div class="col">'+entries.slice(idx).map(e=>e.html).join("")+'</div>';
+  cols.push(cur);
+  while(cols.length<n) cols.push([]);
+  return cols.map(c=>'<div class="col">'+c.map(e=>e.html).join("")+'</div>').join("");
 }
+function twoCols(entries){ return splitCols(entries,2); }
 function render(deceased, sick){
   const dec = sortByPassing(deceased).map(deceasedHTML).filter(Boolean);
   const sic = sick.map(sickHTML).filter(e=>e.html);
