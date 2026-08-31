@@ -49,10 +49,13 @@
   .area.deceased .area-head h2{color:var(--accent);}
   .area.ill .area-head h2{color:var(--accent2);}
   .area-head .cnt{font:14px system-ui,-apple-system,sans-serif;color:var(--muted);}
-  .grid2{column-count:2;column-gap:44px;}
-  .area.deceased .grid2{column-count:1;}     /* deceased list: single column */
-  .entry{break-inside:avoid;-webkit-column-break-inside:avoid;
-    padding:4px 0;border-bottom:1px solid #ece6db;}
+  /* Two side-by-side columns built in HTML rather than CSS column-count:
+     WebKit (notably iOS Safari) often collapses multicol layouts to a
+     single column when printing, so we split the list into two .col
+     divs and lay them out with flexbox instead. */
+  .grid2{display:flex;gap:44px;}
+  .grid2 .col{flex:1;min-width:0;}
+  .entry{break-inside:avoid;padding:4px 0;border-bottom:1px solid #ece6db;}
   /* deceased: full ceremony sentence, large */
   .entry.line{font-size:22px;line-height:1.25;}
   .entry.line .nm{font-weight:600;}
@@ -62,9 +65,10 @@
   .entry .nm{font-size:22px;font-weight:600;line-height:1.25;}
   .entry .sp2{font-size:16px;font-style:italic;font-weight:400;color:var(--muted);}
   .entry.sick .ref-inline{font-size:17px;font-weight:400;color:#5b5248;}
-  @media (max-width:720px){
+  @media screen and (max-width:720px){
     body{font-size:19px;} .sheet{padding:26px 20px 36px;}
     header.doc h1{font-size:27px;}
+    .grid2{flex-direction:column;gap:0;}       /* stack columns on a phone screen */
   }
   @media print{
     @page{margin:10mm;}
@@ -77,8 +81,7 @@
     .area{margin-bottom:12px;}                 /* sick flows right after deceased, no forced page break */
     .area-head{margin-bottom:6px;padding-bottom:3px;}
     .area-head h2{color:#000 !important;font-size:15pt;}
-    .grid2{column-count:2;column-gap:30px;}
-    .area.deceased .grid2{column-count:1;}    /* deceased: single column */
+    .grid2{gap:30px;}
     .entry{break-inside:avoid;padding:2px 0;}
     .entry.line{font-size:13pt;line-height:1.18;} .entry .nm{font-size:13pt;}
     .entry .sp2,.entry.sick .ref-inline{font-size:11pt;}
@@ -194,12 +197,19 @@ function deceasedHTML(o){
   return '<div class="entry line"><span class="nm">'+esc(o.name)+'</span>'+sp+'</div>';
 }
 
-/* Sick: name + who referred them, on one line */
+/* Sick: name + who referred them, on one line.
+   Also returns a rough "weight" (raw character count of the visible text)
+   used to balance the two print columns by content length rather than
+   by a plain entry count, since referrals/spellings make some rows
+   much longer than others. */
 function sickHTML(o){
   const ref=referral(o.member, o.rel);
   const sp = o.spelling ? ' <span class="sp2">('+esc(o.spelling)+')</span>' : '';
   const tail = ref ? ' <span class="ref-inline">— '+ref+'</span>' : '';
-  return '<div class="entry sick"><span class="nm">'+esc(o.name)+'</span>'+sp+tail+'</div>';
+  const html = '<div class="entry sick"><span class="nm">'+esc(o.name)+'</span>'+sp+tail+'</div>';
+  const weight = o.name.length + (o.spelling?o.spelling.length+3:0)
+               + (ref?(o.member||"").length+(o.rel||"").length+4:0);
+  return {html, weight};
 }
 
 const SICK_SUMMARY = "And for those who are living with illness, including all sangha members, friends, and family members.";
@@ -215,15 +225,29 @@ function sortByPassing(list){
     return db - da;             // most recent passing first
   });
 }
+/* Split weighted entries {html,weight} into two side-by-side .col divs,
+   breaking at the point where the first column's cumulative weight is
+   closest to half the total, so both print columns end up close to
+   the same length even when a few entries are much longer than others. */
+function twoCols(entries){
+  const total=entries.reduce((s,e)=>s+e.weight,0), target=total/2;
+  let cum=0, idx=entries.length;
+  for(let i=0;i<entries.length;i++){
+    cum+=entries[i].weight;
+    if(cum>=target){ idx=i+1; break; }
+  }
+  return '<div class="col">'+entries.slice(0,idx).map(e=>e.html).join("")+'</div>'
+       + '<div class="col">'+entries.slice(idx).map(e=>e.html).join("")+'</div>';
+}
 function render(deceased, sick){
   const dec = sortByPassing(deceased).map(deceasedHTML).filter(Boolean);
-  const sic = sick.map(sickHTML).filter(Boolean);
+  const sic = sick.map(sickHTML).filter(e=>e.html);
   const deceasedArea =
       '<section class="area deceased"><div class="area-head"><h2>Recently Deceased</h2></div>'
-    + '<div class="grid2">'+dec.join("")+'</div></section>';
+    + '<div class="grid2"><div class="col">'+dec.join("")+'</div></div></section>';
   const illArea =
       '<section class="area ill"><div class="area-head"><h2>And for those who are ill, including:</h2></div>'
-    + '<div class="grid2 sick-list">'+sic.join("")+'</div>'
+    + '<div class="grid2 sick-list">'+twoCols(sic)+'</div>'
     + '<p class="sick-summary">'+esc(SICK_SUMMARY)+'</p></section>';
   document.getElementById("content").innerHTML = deceasedArea + illArea;
 }
