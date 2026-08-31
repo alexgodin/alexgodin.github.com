@@ -65,17 +65,27 @@
   .entry .nm{font-size:22px;font-weight:600;line-height:1.25;}
   .entry .sp2{font-size:16px;font-style:italic;font-weight:400;color:var(--muted);}
   .entry.sick .ref-inline{font-size:17px;font-weight:400;color:#5b5248;}
-  /* front-page check-in report: entries grouped by contact/referrer.
+  /* front-page check-in report: entries grouped by contact/referrer, two
+     columns, tight spacing throughout — this is a working checklist, not
+     a formal page, so it should be as compact as possible.
      The contact's name is the prominent bit (they're who needs to act);
      the sick person's name underneath is de-emphasized. */
-  .checkin-group{margin-bottom:20px;}
+  .report-sheet{padding:24px 32px 28px;}
+  .report-sheet .grid2{gap:28px;}
+  .report-sheet header.doc{padding-bottom:8px;margin-bottom:12px;}
+  .report-sheet header.doc .logo{height:38px;margin-bottom:6px;}
+  .report-sheet header.doc h1{font-size:23px;margin-bottom:3px;}
+  .report-sheet header.doc .sub{font-size:13px;}
+  .checkin-group{margin-bottom:8px;break-inside:avoid;}
   .checkin-group:last-child{margin-bottom:0;}
-  .checkin-group .contact-name{font-size:25px;font-weight:800;color:var(--accent);
-    margin:0 0 8px;padding-bottom:4px;border-bottom:1.5px solid var(--rule);}
-  .entry.checkin{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;}
-  .entry.checkin .nm{font-size:16px;font-weight:600;}
-  .entry.checkin .sp2{font-size:14px;}
-  .entry.checkin .status{font-size:16px;font-weight:700;color:var(--accent2);white-space:nowrap;}
+  .checkin-group .contact-name{font-size:16px;font-weight:800;color:var(--accent);
+    margin:0 0 1px;}
+  .entry.checkin{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    padding:0;border-bottom:0;line-height:1.3;}
+  .entry.checkin .nm{font-size:13px;font-weight:600;}
+  .entry.checkin .sp2{font-size:11px;}
+  .entry.checkin .ref-inline{font-size:11px;}
+  .entry.checkin .status{font-size:12px;font-weight:700;color:var(--accent2);white-space:nowrap;}
   .entry.checkin .status.never{color:#a1443d;}
   @media screen and (max-width:720px){
     body{font-size:19px;} .sheet{padding:26px 20px 36px;}
@@ -100,9 +110,9 @@
     .entry .sp2,.entry.sick .ref-inline{font-size:11pt;}
     .entry.line .day{color:#000;}
     .sick-summary{font-size:13pt;}
-    .checkin-group .contact-name{font-size:15pt;color:#000 !important;}
-    .entry.checkin .nm{font-size:11pt;}
-    .entry.checkin .status{font-size:12pt;color:#000 !important;}
+    .report-sheet .grid2{gap:24px;}
+    .checkin-group .contact-name{color:#000 !important;}
+    .entry.checkin .status{color:#000 !important;}
   }
 </style>
 </head>
@@ -271,8 +281,9 @@ function reportHTML(sick){
     if(b==="No contact listed") return -1;
     return a.localeCompare(b);
   });
-  const sections = keys.map(k=>{
-    const rows = groups.get(k).map(({o,days})=>{
+  const groupObjs = keys.map(k=>{
+    const items = groups.get(k);
+    const rows = items.map(({o,days})=>{
       const sp = o.spelling ? ' <span class="sp2">('+esc(o.spelling)+')</span>' : '';
       const relTag = o.rel ? ' <span class="ref-inline">— '+esc(o.rel)+'</span>' : '';
       const status = days===null
@@ -280,13 +291,15 @@ function reportHTML(sick){
         : '<span class="status">Checked on '+days+' days ago</span>';
       return '<div class="entry checkin"><span><span class="nm">'+esc(o.name)+'</span>'+sp+relTag+'</span>'+status+'</div>';
     }).join("");
-    return '<div class="checkin-group"><h3 class="contact-name">'+esc(k)+'</h3>'+rows+'</div>';
-  }).join("");
+    const html = '<div class="checkin-group"><h3 class="contact-name">'+esc(k)+'</h3>'+rows+'</div>';
+    const weight = k.length + items.length*22;    // heading + ~one row's worth of height each
+    return {html, weight};
+  });
   return '<div class="sheet report-sheet"><header class="doc">'
     + '<img class="logo" src="nyzc-logo.png" alt="New York Zen Center">'
     + '<h1>Check-In Report</h1>'
     + '<p class="sub">Not checked on in the last 6 weeks (or ever), grouped by contact</p></header>'
-    + sections + '</div>';
+    + '<div class="grid2">'+twoCols(groupObjs)+'</div></div>';
 }
 
 /* Sort deceased by date of passing, most recent first.
