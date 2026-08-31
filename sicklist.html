@@ -65,9 +65,17 @@
   .entry .nm{font-size:22px;font-weight:600;line-height:1.25;}
   .entry .sp2{font-size:16px;font-style:italic;font-weight:400;color:var(--muted);}
   .entry.sick .ref-inline{font-size:17px;font-weight:400;color:#5b5248;}
-  /* front-page check-in report: sick-list entries not contacted in 6+ weeks */
+  /* front-page check-in report: entries grouped by contact/referrer.
+     The contact's name is the prominent bit (they're who needs to act);
+     the sick person's name underneath is de-emphasized. */
+  .checkin-group{margin-bottom:20px;}
+  .checkin-group:last-child{margin-bottom:0;}
+  .checkin-group .contact-name{font-size:25px;font-weight:800;color:var(--accent);
+    margin:0 0 8px;padding-bottom:4px;border-bottom:1.5px solid var(--rule);}
   .entry.checkin{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;}
-  .entry.checkin .status{font-size:16px;font-weight:600;color:var(--accent);white-space:nowrap;}
+  .entry.checkin .nm{font-size:16px;font-weight:600;}
+  .entry.checkin .sp2{font-size:14px;}
+  .entry.checkin .status{font-size:16px;font-weight:700;color:var(--accent2);white-space:nowrap;}
   .entry.checkin .status.never{color:#a1443d;}
   @media screen and (max-width:720px){
     body{font-size:19px;} .sheet{padding:26px 20px 36px;}
@@ -92,7 +100,9 @@
     .entry .sp2,.entry.sick .ref-inline{font-size:11pt;}
     .entry.line .day{color:#000;}
     .sick-summary{font-size:13pt;}
-    .entry.checkin .status{font-size:11pt;color:#000 !important;}
+    .checkin-group .contact-name{font-size:15pt;color:#000 !important;}
+    .entry.checkin .nm{font-size:11pt;}
+    .entry.checkin .status{font-size:12pt;color:#000 !important;}
   }
 </style>
 </head>
@@ -230,7 +240,7 @@ function sickHTML(o){
 const SICK_SUMMARY = "And for those who are living with illness, including all sangha members, friends, and family members.";
 
 /* Front-page check-in report: sick-list entries with no "Last contacted"
-   date, or one older than 6 weeks, sorted most-overdue (never = top) first. */
+   date, or one older than 6 weeks, most-overdue (never = top) first. */
 const CHECKIN_STALE_DAYS = 42;
 function checkinReport(sick){
   return sick.map(o=>({o, days:(d=>d?daysSince(d):null)(parseDate(o.lastContacted))}))
@@ -240,23 +250,43 @@ function checkinReport(sick){
       return b.days - a.days;
     });
 }
+/* Grouped by contact (Referred By), since it's that person who needs to
+   act on the list. Groups sort alphabetically by contact name, with
+   entries with no contact listed pushed to the end. */
+function groupByContact(overdue){
+  const groups=new Map();
+  overdue.forEach(item=>{
+    const key=item.o.member||"No contact listed";
+    if(!groups.has(key)) groups.set(key,[]);
+    groups.get(key).push(item);
+  });
+  return groups;
+}
 function reportHTML(sick){
   const overdue = checkinReport(sick);
   if(!overdue.length) return "";
-  const rows = overdue.map(({o,days})=>{
-    const ref = referral(o.member, o.rel);
-    const sp = o.spelling ? ' <span class="sp2">('+esc(o.spelling)+')</span>' : '';
-    const status = days===null
-      ? '<span class="status never">Never checked on</span>'
-      : '<span class="status">Checked on '+days+' days ago</span>';
-    return '<div class="entry checkin"><span><span class="nm">'+esc(o.name)+'</span>'+sp+
-           (ref?' <span class="ref-inline">— '+ref+'</span>':'')+'</span>'+status+'</div>';
+  const groups = groupByContact(overdue);
+  const keys = [...groups.keys()].sort((a,b)=>{
+    if(a==="No contact listed") return 1;
+    if(b==="No contact listed") return -1;
+    return a.localeCompare(b);
+  });
+  const sections = keys.map(k=>{
+    const rows = groups.get(k).map(({o,days})=>{
+      const sp = o.spelling ? ' <span class="sp2">('+esc(o.spelling)+')</span>' : '';
+      const relTag = o.rel ? ' <span class="ref-inline">— '+esc(o.rel)+'</span>' : '';
+      const status = days===null
+        ? '<span class="status never">Never checked on</span>'
+        : '<span class="status">Checked on '+days+' days ago</span>';
+      return '<div class="entry checkin"><span><span class="nm">'+esc(o.name)+'</span>'+sp+relTag+'</span>'+status+'</div>';
+    }).join("");
+    return '<div class="checkin-group"><h3 class="contact-name">'+esc(k)+'</h3>'+rows+'</div>';
   }).join("");
   return '<div class="sheet report-sheet"><header class="doc">'
     + '<img class="logo" src="nyzc-logo.png" alt="New York Zen Center">'
     + '<h1>Check-In Report</h1>'
-    + '<p class="sub">Sick-list names not checked on in the last 6 weeks (or ever)</p></header>'
-    + '<div class="checkin-list">'+rows+'</div></div>';
+    + '<p class="sub">Not checked on in the last 6 weeks (or ever), grouped by contact</p></header>'
+    + sections + '</div>';
 }
 
 /* Sort deceased by date of passing, most recent first.
