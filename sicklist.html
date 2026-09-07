@@ -257,6 +257,7 @@ const SICK_SUMMARY = "And for those who are living with illness, including all s
 const CHECKIN_STALE_DAYS = 42;
 function checkinReport(sick){
   return sick.filter(o=>{
+    if(/not needed/i.test(o.lastContacted)) return false;
     const d=parseDate(o.lastContacted);
     return !d || daysSince(d)>=CHECKIN_STALE_DAYS;
   });
