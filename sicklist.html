@@ -77,6 +77,9 @@
      page. The contact's name is the prominent bit (they're who needs to
      act); the sick person's name underneath is de-emphasized. */
   .report-sheet{padding:20px 28px 22px;}
+  /* forces a blank physical page after the report, so double-sided
+     printing never puts report content back-to-back with the sick list */
+  .blank-page{display:none;}
   .report-sheet header.doc{padding-bottom:6px;margin-bottom:10px;}
   .report-sheet header.doc .logo{height:32px;margin-bottom:5px;}
   .report-sheet header.doc h1{font-size:20px;margin-bottom:2px;}
@@ -101,6 +104,7 @@
     .toolbar{display:none;}
     .sheet{max-width:none;margin:0;padding:0;box-shadow:none;border-radius:0;}
     .report-sheet{page-break-after:always;break-after:page;}
+    .blank-page{display:block;height:1px;page-break-after:always;break-after:page;}
     header.doc{margin-bottom:10px;padding-bottom:8px;} header.doc h1{font-size:20pt;margin-bottom:4px;}
     header.doc .logo{height:42px;margin-bottom:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     header.doc .sub{font-size:11pt;}
@@ -300,7 +304,8 @@ function reportHTML(sick){
     + '<img class="logo" src="nyzc-logo.png" alt="New York Zen Center">'
     + '<h1>Check-In Report</h1>'
     + '<p class="sub">Not checked on in the last 6 weeks (or ever), grouped by contact</p></header>'
-    + '<div class="grid3">'+splitCols(groupObjs,3)+'</div></div>';
+    + '<div class="grid3">'+splitCols(groupObjs,3)+'</div></div>'
+    + '<div class="blank-page"></div>';   // duplex printing: keeps the report on its own sheet
 }
 
 /* Sort deceased by date of passing, most recent first.
