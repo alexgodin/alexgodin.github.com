@@ -138,9 +138,10 @@
    Live source: one Google Spreadsheet with two tabs.
    Columns are read BY HEADER NAME (order doesn't matter):
      Recently Deceased tab: Name | Spelling | Date | Pronouns  (+ any others)
-     Sick tab:              Name | Spelling | Added | Referred By | Relationship | Last contacted
+     Sick tab:              Name | Spelling | Added | Referred By | Relationship | Last contacted | Contact Not Needed
    Pronouns holds his / her / their (used for "...the Nth day of ___ passing").
    Last contacted (blank if never) drives the front-page check-in report.
+   Contact Not Needed: any non-blank value excludes the person from that report entirely.
    The spreadsheet must be shared "Anyone with the link - Viewer".
    ============================================================ */
 const SHEET_ID = "1EF5AopbqciIzcT3F2OSDTP5mJZGq2kvy-RvVJ2IfCHE";
@@ -189,7 +190,8 @@ function tableToObjects(resp){
       rel:(pick(o,"relationship")+"").trim(),
       pronoun:(pick(o,"pronouns","pronoun")+"").trim(),
       added:(pick(o,"added")+"").trim(),
-      lastContacted:(pick(o,"last contacted","last contact","contacted")+"").trim()
+      lastContacted:(pick(o,"last contacted","last contact","contacted")+"").trim(),
+      contactNotNeeded:!!(pick(o,"contact not needed","not needed")+"").trim()
     };
   }).filter(x=>x.name);
 }
@@ -257,7 +259,7 @@ const SICK_SUMMARY = "And for those who are living with illness, including all s
 const CHECKIN_STALE_DAYS = 42;
 function checkinReport(sick){
   return sick.filter(o=>{
-    if(/not needed/i.test(o.lastContacted)) return false;
+    if(o.contactNotNeeded) return false;
     const d=parseDate(o.lastContacted);
     return !d || daysSince(d)>=CHECKIN_STALE_DAYS;
   });
