@@ -358,20 +358,28 @@ function splitCols(entries, n){
   return cols.map(c=>'<div class="col">'+c.map(e=>e.html).join("")+'</div>').join("");
 }
 function twoCols(entries){ return splitCols(entries,2); }
-/* A few ruled blank lines, print-only, for handwriting in late additions. */
+/* A few ruled blank lines, print-only, for handwriting in late additions.
+   Only shown when printing for a back-dated "as of" (not today) — a
+   same-day printout is already current, so there's nothing to catch up on. */
 const FILL_BLANK_COUNT = 3;
 function blankFillHTML(cls){
   return '<div class="entry '+cls+' fill-blank">&nbsp;</div>'.repeat(FILL_BLANK_COUNT);
 }
+function isToday(ref){
+  const t=new Date(); t.setHours(0,0,0,0);
+  return ref.getTime()===t.getTime();
+}
 function render(deceased, sick, ref){
   const dec = sortByPassing(deceased).map(o=>deceasedHTML(o, ref)).filter(Boolean);
   const sic = sick.map(sickHTML).filter(e=>e.html);
+  const blanks = isToday(ref) ? "" : blankFillHTML("line");
+  const blanksSick = isToday(ref) ? "" : blankFillHTML("sick");
   const deceasedArea =
       '<section class="area deceased"><div class="area-head"><h2>Recently Deceased</h2></div>'
-    + dec.join("") + blankFillHTML("line") + '</section>';
+    + dec.join("") + blanks + '</section>';
   const illArea =
       '<section class="area ill"><div class="area-head"><h2>And for those who are ill, including:</h2></div>'
-    + '<div class="sick-list"><div class="grid2">'+twoCols(sic)+'</div>' + blankFillHTML("sick") + '</div>'
+    + '<div class="sick-list"><div class="grid2">'+twoCols(sic)+'</div>' + blanksSick + '</div>'
     + '<p class="sick-summary">'+esc(SICK_SUMMARY)+'</p></section>';
   document.getElementById("content").innerHTML = deceasedArea + illArea;
 }
