@@ -27,6 +27,9 @@
   .toolbar .toggle{font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#5c5347;
     display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;}
   .toolbar .toggle input{width:17px;height:17px;cursor:pointer;accent-color:var(--accent);}
+  .toolbar input[type=date]{font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);
+    border:1px solid var(--rule);border-radius:5px;padding:6px 8px;background:#fff;}
+  body.hide-report #reportSheet{display:none;}
   button.print{font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
     background:var(--accent);color:#fff;border:0;padding:11px 20px;border-radius:6px;cursor:pointer;}
   button.print:hover{background:#63482f;}
@@ -80,6 +83,8 @@
   /* forces a blank physical page after the report, so double-sided
      printing never puts report content back-to-back with the sick list */
   .blank-page{display:none;}
+  /* blank lines for handwriting in additions on the printed page; not shown on screen */
+  .fill-blank{display:none;}
   .report-sheet header.doc{padding-bottom:6px;margin-bottom:10px;}
   .report-sheet header.doc .logo{height:32px;margin-bottom:5px;}
   .report-sheet header.doc h1{font-size:20px;margin-bottom:2px;}
@@ -105,6 +110,7 @@
     .sheet{max-width:none;margin:0;padding:0;box-shadow:none;border-radius:0;}
     .report-sheet{page-break-after:always;break-after:page;}
     .blank-page{display:block;height:1px;page-break-after:always;break-after:page;}
+    .fill-blank{display:block;height:22px;border-bottom:1px solid #ece6db;break-inside:avoid;}
     header.doc{margin-bottom:10px;padding-bottom:8px;} header.doc h1{font-size:20pt;margin-bottom:4px;}
     header.doc .logo{height:42px;margin-bottom:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     header.doc .sub{font-size:11pt;}
@@ -125,6 +131,8 @@
 <body>
 <div class="toolbar">
   <span class="status" id="status">Loading…</span>
+  <label class="toggle" for="asOfDate">As of <input type="date" id="asOfDate"></label>
+  <label class="toggle"><input type="checkbox" id="hideReport"> Hide report</label>
   <label class="toggle"><input type="checkbox" id="skipSick"> Skip the sick list</label>
   <button class="print" onclick="window.print()">Print</button>
 </div>
@@ -210,13 +218,28 @@ function parseDate(s){
   const d=new Date(s); return isNaN(d)?null:d;
 }
 function ordinal(n){ const s=["th","st","nd","rd"],v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); }
-function daysOfPassing(d){
-  const today=new Date(); today.setHours(0,0,0,0);
+/* "As of" date, from the toolbar date picker (defaults to today). All
+   day-count math below is relative to this, so the printout can be
+   produced as of any date, not just the day it's printed. */
+function todayISO(){
+  const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function getRefDate(){
+  const v=document.getElementById("asOfDate").value;
+  let d;
+  if(v){ const [y,m,day]=v.split("-").map(Number); d=new Date(y,m-1,day); }
+  else d=new Date();
+  d.setHours(0,0,0,0);
+  return d;
+}
+function daysOfPassing(d, ref){
+  const today=ref||new Date();
   const t=new Date(d.getFullYear(),d.getMonth(),d.getDate());
   return Math.floor((today-t)/86400000)+1;   // day of passing = day 1
 }
-function daysSince(d){
-  const today=new Date(); today.setHours(0,0,0,0);
+function daysSince(d, ref){
+  const today=ref||new Date();
   const t=new Date(d.getFullYear(),d.getMonth(),d.getDate());
   return Math.floor((today-t)/86400000);
 }
@@ -226,12 +249,12 @@ function referral(member, rel){
 }
 
 /* Deceased: full ceremony sentence "NAME on this the Nth day of PRONOUN passing" */
-function deceasedHTML(o){
+function deceasedHTML(o, ref){
   const d=parseDate(o.date);
   const sp = o.spelling ? ' <span class="sp">('+esc(o.spelling)+')</span>' : '';
   const pronoun = esc((o.pronoun||"their").trim().toLowerCase());
   if(d){
-    const n=daysOfPassing(d);
+    const n=daysOfPassing(d, ref);
     if(n>=DROP_AFTER_DAYS) return "";                 // 50+ days: no longer shown
     return '<div class="entry line"><span class="nm">'+esc(o.name)+'</span>'+sp+
            ' on this the <span class="day">'+ordinal(n)+'</span> day of '+pronoun+' passing</div>';
@@ -261,11 +284,11 @@ const SICK_SUMMARY = "And for those who are living with illness, including all s
    date, or one older than 6 weeks. No day-counts are shown — the point
    is just the list of who to check on. */
 const CHECKIN_STALE_DAYS = 42;
-function checkinReport(sick){
+function checkinReport(sick, ref){
   return sick.filter(o=>{
     if(o.contactNotNeeded) return false;
     const d=parseDate(o.lastContacted);
-    return !d || daysSince(d)>=CHECKIN_STALE_DAYS;
+    return !d || daysSince(d, ref)>=CHECKIN_STALE_DAYS;
   });
 }
 /* Grouped by contact (Referred By), since it's that person who needs to
@@ -280,8 +303,8 @@ function groupByContact(overdue){
   });
   return groups;
 }
-function reportHTML(sick){
-  const overdue = checkinReport(sick);
+function reportHTML(sick, ref){
+  const overdue = checkinReport(sick, ref);
   if(!overdue.length) return "";
   const groups = groupByContact(overdue);
   const keys = [...groups.keys()].sort((a,b)=>{
@@ -335,33 +358,43 @@ function splitCols(entries, n){
   return cols.map(c=>'<div class="col">'+c.map(e=>e.html).join("")+'</div>').join("");
 }
 function twoCols(entries){ return splitCols(entries,2); }
-function render(deceased, sick){
-  const dec = sortByPassing(deceased).map(deceasedHTML).filter(Boolean);
+/* A few ruled blank lines, print-only, for handwriting in late additions. */
+const FILL_BLANK_COUNT = 3;
+function blankFillHTML(cls){
+  return '<div class="entry '+cls+' fill-blank">&nbsp;</div>'.repeat(FILL_BLANK_COUNT);
+}
+function render(deceased, sick, ref){
+  const dec = sortByPassing(deceased).map(o=>deceasedHTML(o, ref)).filter(Boolean);
   const sic = sick.map(sickHTML).filter(e=>e.html);
   const deceasedArea =
       '<section class="area deceased"><div class="area-head"><h2>Recently Deceased</h2></div>'
-    + dec.join("") + '</section>';
+    + dec.join("") + blankFillHTML("line") + '</section>';
   const illArea =
       '<section class="area ill"><div class="area-head"><h2>And for those who are ill, including:</h2></div>'
-    + '<div class="grid2 sick-list">'+twoCols(sic)+'</div>'
+    + '<div class="sick-list"><div class="grid2">'+twoCols(sic)+'</div>' + blankFillHTML("sick") + '</div>'
     + '<p class="sick-summary">'+esc(SICK_SUMMARY)+'</p></section>';
   document.getElementById("content").innerHTML = deceasedArea + illArea;
 }
-function setAsOf(){
-  const d=new Date();
+function setAsOf(ref){
   document.getElementById("asof").textContent =
-    "As of "+d.toLocaleDateString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+    "As of "+ref.toLocaleDateString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+}
+let DECEASED_DATA=[], SICK_DATA=[];
+function renderAll(){
+  const ref=getRefDate();
+  setAsOf(ref);
+  render(DECEASED_DATA, SICK_DATA, ref);
+  document.getElementById("reportSheet").innerHTML = reportHTML(SICK_DATA, ref);
 }
 async function load(){
-  setAsOf();
+  document.getElementById("asOfDate").value = todayISO();
   const status=document.getElementById("status");
   if(!SHEET_ID){ document.getElementById("content").innerHTML=""; status.textContent="No sheet configured."; return; }
   try{
     const [decResp, sickResp] = await Promise.all([ jsonp(DECEASED_GID,"__cbDeceased"), jsonp(SICK_GID,"__cbSick") ]);
-    const deceased = tableToObjects(decResp);
-    const sick     = tableToObjects(sickResp);
-    render(deceased, sick);
-    document.getElementById("reportSheet").innerHTML = reportHTML(sick);
+    DECEASED_DATA = tableToObjects(decResp);
+    SICK_DATA     = tableToObjects(sickResp);
+    renderAll();
     status.textContent="Live from Google Sheets";
   }catch(err){
     document.getElementById("content").innerHTML="";   // no fallback: show nothing on failure
@@ -369,6 +402,10 @@ async function load(){
     status.textContent="Couldn't reach the sheet. ("+err.message+")";
   }
 }
+document.getElementById("asOfDate").addEventListener("change", renderAll);
+document.getElementById("hideReport").addEventListener("change",function(e){
+  document.body.classList.toggle("hide-report", e.target.checked);
+});
 document.getElementById("skipSick").addEventListener("change",function(e){
   document.body.classList.toggle("hide-sick", e.target.checked);
 });
