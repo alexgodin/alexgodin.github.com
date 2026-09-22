@@ -111,7 +111,8 @@
     .sheet{max-width:none;margin:0;padding:0;box-shadow:none;border-radius:0;}
     .report-sheet{page-break-after:always;break-after:page;}
     .blank-page{display:block;height:1px;page-break-after:always;break-after:page;}
-    .fill-blank{display:block;height:22px;border-bottom:1px solid #ece6db;break-inside:avoid;}
+    .fill-blank{display:block;break-inside:avoid;margin-top:2px;
+      background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 21px,#ece6db 21px,#ece6db 22px);}
     header.doc{margin-bottom:10px;padding-bottom:8px;} header.doc h1{font-size:20pt;margin-bottom:4px;}
     header.doc .logo{height:42px;margin-bottom:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     header.doc .sub{font-size:11pt;}
@@ -363,8 +364,9 @@ function twoCols(entries){ return splitCols(entries,2); }
    Only shown when printing for a back-dated "as of" (not today) — a
    same-day printout is already current, so there's nothing to catch up on. */
 const FILL_BLANK_COUNT = 3;
+const FILL_BLANK_LINE_HEIGHT = 22;
 function blankFillHTML(cls){
-  return '<div class="entry '+cls+' fill-blank">&nbsp;</div>'.repeat(FILL_BLANK_COUNT);
+  return '<div class="entry '+cls+' fill-blank" style="height:'+(FILL_BLANK_COUNT*FILL_BLANK_LINE_HEIGHT)+'px"></div>';
 }
 function isToday(ref){
   const t=new Date(); t.setHours(0,0,0,0);
