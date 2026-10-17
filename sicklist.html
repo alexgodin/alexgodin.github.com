@@ -25,7 +25,7 @@
   .toolbar .status{margin-right:auto;
     font:14px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#5c5347;}
   .toolbar .toggle{font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#5c5347;
-    display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;}
+    display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;text-decoration:none;}
   .toolbar .toggle input{width:17px;height:17px;cursor:pointer;accent-color:var(--accent);}
   .toolbar input[type=date]{font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);
     border:1px solid var(--rule);border-radius:5px;padding:6px 8px;background:#fff;
@@ -136,6 +136,7 @@
   <label class="toggle" for="asOfDate">As of <input type="date" id="asOfDate"></label>
   <label class="toggle"><input type="checkbox" id="hideReport"> Hide report</label>
   <label class="toggle"><input type="checkbox" id="skipSick"> Skip the sick list</label>
+  <a class="toggle" href="sicklist-admin.html">Manage</a>
   <button class="print" onclick="window.print()">Print</button>
 </div>
 <div id="reportSheet"></div>
@@ -147,74 +148,59 @@
   </header>
   <div id="content"></div>
 </div>
-<script>
-/* ============================================================
-   Live source: one Google Spreadsheet with two tabs.
-   Columns are read BY HEADER NAME (order doesn't matter):
-     Recently Deceased tab: Name | Spelling | Date | Pronouns  (+ any others)
-     Sick tab:              Name | Spelling | Added | Referred By | Relationship | Last contacted | Contact Not Needed
-   Pronouns holds his / her / their (used for "...the Nth day of ___ passing").
-   Last contacted (blank if never) drives the front-page check-in report.
-   Contact Not Needed: any non-blank value excludes the person from that report entirely.
-   The spreadsheet must be shared "Anyone with the link - Viewer".
-   ============================================================ */
-const SHEET_ID = "1EF5AopbqciIzcT3F2OSDTP5mJZGq2kvy-RvVJ2IfCHE";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-/* Which tab is which. gid is the number in the sheet URL (…#gid=NUMBER).
-   Deceased gid is known from your link; Sick uses the first tab by default. */
-const DECEASED_GID = "884354908";
-const SICK_GID = null;                 // null = first tab
+/* ============================================================
+   Live source: Firestore, two top-level collections.
+     deceased/{autoId}: name, spelling, date ("YYYY-MM-DD"), pronoun (his/her/their)
+     sick/{autoId}:     name, spelling, added ("YYYY-MM-DD"), member (referred by),
+                        rel (relationship), lastContacted ("YYYY-MM-DD" or ""),
+                        contactNotNeeded (boolean)
+   Pronoun holds his / her / their (used for "...the Nth day of ___ passing").
+   Last contacted (blank if never) drives the front-page check-in report.
+   Contact Not Needed: true excludes the person from that report entirely.
+   Edited via sicklist-admin.html; reads here are public/unauthenticated
+   (see firestore.rules — writes are restricted to the admin account).
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCe8U26iKyXUPo8TbJBo4b7KgSK4vcnl00",
+  authDomain: "kanshin-sicklist.firebaseapp.com",
+  projectId: "kanshin-sicklist",
+  storageBucket: "kanshin-sicklist.firebasestorage.app",
+  messagingSenderId: "1047654379439",
+  appId: "1:1047654379439:web:98a0d2abf2b3947672895a"
+};
+const db = getFirestore(initializeApp(firebaseConfig));
 
 /* Deceased are shown until the 50th day of passing, then drop off. */
 const DROP_AFTER_DAYS = 50;
 
 function esc(s){ return (s||"").replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m])); }
 
-/* Load a tab via gviz JSONP (a <script> include, so it is NOT subject to the
-   CORS restriction that blocks the plain CSV endpoint). Works with a sheet
-   shared "Anyone with the link - Viewer"; no "Publish to web" needed. */
-function jsonp(gid, cbName){
-  return new Promise((resolve,reject)=>{
-    const s=document.createElement("script");
-    let done=false;
-    function cleanup(){ clearTimeout(timer); try{delete window[cbName];}catch(e){window[cbName]=undefined;} s.remove(); }
-    const timer=setTimeout(()=>{ if(!done){done=true; cleanup(); reject(new Error("timeout")); } },15000);
-    window[cbName]=(resp)=>{ if(done) return; done=true; cleanup(); resolve(resp); };
-    s.onerror=()=>{ if(!done){done=true; cleanup(); reject(new Error("script blocked")); } };
-    let u="https://docs.google.com/spreadsheets/d/"+SHEET_ID+
-          "/gviz/tq?headers=1&tqx=out:json;responseHandler:"+cbName;
-    if(gid) u+="&gid="+gid;
-    s.src=u;
-    document.head.appendChild(s);
-  });
-}
-/* gviz JSON -> objects keyed by header label; dates use the formatted (.f) value. */
-function tableToObjects(resp){
-  const t=resp && resp.table; if(!t) return [];
-  const cols=t.cols.map(c=>((c.label||"")+"").trim().toLowerCase());
-  const pick=(o,...names)=>{ for(const n of names){ if(o[n]!=null && o[n]!=="") return o[n]; } return ""; };
-  return (t.rows||[]).map(r=>{
-    const o={};
-    (r.c||[]).forEach((cell,i)=>{ o[cols[i]] = cell ? (cell.f!=null?cell.f:(cell.v!=null?cell.v:"")) : ""; });
-    return {
-      name:(pick(o,"name")+"").trim(),
-      spelling:(pick(o,"spelling")+"").trim(),
-      date:(pick(o,"date")+"").trim(),
-      member:(pick(o,"referred by","referred")+"").trim(),
-      rel:(pick(o,"relationship")+"").trim(),
-      pronoun:(pick(o,"pronouns","pronoun")+"").trim(),
-      added:(pick(o,"added")+"").trim(),
-      lastContacted:(pick(o,"last contacted","last contact","contacted")+"").trim(),
-      contactNotNeeded:!!(pick(o,"contact not needed","not needed")+"").trim()
-    };
-  }).filter(x=>x.name);
+/* Firestore doc -> the same flat object shape every render function expects. */
+function docToObject(doc){
+  const o=doc.data()||{};
+  const s=v=>((v==null?"":v)+"").trim();
+  return {
+    name:s(o.name),
+    spelling:s(o.spelling),
+    date:s(o.date),
+    member:s(o.member),
+    rel:s(o.rel),
+    pronoun:s(o.pronoun),
+    added:s(o.added),
+    lastContacted:s(o.lastContacted),
+    contactNotNeeded:!!o.contactNotNeeded
+  };
 }
 
 const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 function parseDate(s){
   if(!s) return null; s=(""+s).trim();
-  let m=s.match(/^Date\((\d+),(\d+),(\d+)/);          // gviz raw form: Date(2026,5,30)
-  if(m){ return new Date(+m[1],+m[2],+m[3]); }
+  let m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);          // ISO, e.g. from <input type=date>
+  if(m){ return new Date(+m[1],+m[2]-1,+m[3]); }
   m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
   if(m){ let y=+m[3]; if(y<100) y+=2000; return new Date(y,+m[1]-1,+m[2]); }
   const d=new Date(s); return isNaN(d)?null:d;
@@ -400,17 +386,16 @@ function renderAll(){
 async function load(){
   document.getElementById("asOfDate").value = todayISO();
   const status=document.getElementById("status");
-  if(!SHEET_ID){ document.getElementById("content").innerHTML=""; status.textContent="No sheet configured."; return; }
   try{
-    const [decResp, sickResp] = await Promise.all([ jsonp(DECEASED_GID,"__cbDeceased"), jsonp(SICK_GID,"__cbSick") ]);
-    DECEASED_DATA = tableToObjects(decResp);
-    SICK_DATA     = tableToObjects(sickResp);
+    const [decSnap, sickSnap] = await Promise.all([ getDocs(collection(db,"deceased")), getDocs(collection(db,"sick")) ]);
+    DECEASED_DATA = decSnap.docs.map(docToObject).filter(x=>x.name);
+    SICK_DATA     = sickSnap.docs.map(docToObject).filter(x=>x.name);
     renderAll();
-    status.textContent="Live from Google Sheets";
+    status.textContent="Live from Firestore";
   }catch(err){
     document.getElementById("content").innerHTML="";   // no fallback: show nothing on failure
     document.getElementById("reportSheet").innerHTML="";
-    status.textContent="Couldn't reach the sheet. ("+err.message+")";
+    status.textContent="Couldn't reach Firestore. ("+err.message+")";
   }
 }
 document.getElementById("asOfDate").addEventListener("change", renderAll);

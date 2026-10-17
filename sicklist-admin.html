@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage Names of the Sick &amp; Recently Deceased</title>
+<style>
+  @font-face{font-family:"Nexa";src:url("fonts/NexaBook.otf") format("opentype");font-weight:400;font-style:normal;font-display:swap;}
+  @font-face{font-family:"Nexa";src:url("fonts/Nexa-RegularItalic.otf") format("opentype");font-weight:400;font-style:italic;font-display:swap;}
+  @font-face{font-family:"Nexa";src:url("fonts/Nexa-Bold.otf") format("opentype");font-weight:700;font-style:normal;font-display:swap;}
+  @font-face{font-family:"Nexa";src:url("fonts/NexaXBold.otf") format("opentype");font-weight:800;font-style:normal;font-display:swap;}
+  :root{
+    --ink:#1f1b16; --muted:#6f665b; --rule:#ddd6ca; --band:#f6f2ea;
+    --accent:#7a5c3e; --accent2:#4a6d5f; --bg:#ffffff; --danger:#a3432f;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Nexa","Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    color:var(--ink); background:#efe9df; line-height:1.35; font-size:17px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .toolbar{max-width:1040px;margin:0 auto;padding:16px 20px 0;
+    display:flex;gap:12px;align-items:center;justify-content:flex-end;}
+  .toolbar .status{margin-right:auto;
+    font:14px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#5c5347;}
+  .sheet{max-width:1040px;margin:16px auto 40px;background:var(--bg);
+    padding:44px 52px 56px;box-shadow:0 2px 18px rgba(0,0,0,.12);border-radius:2px;}
+  header.doc{text-align:center;border-bottom:2px solid var(--accent);padding-bottom:18px;margin-bottom:30px;}
+  header.doc .logo{display:block;height:64px;width:auto;margin:0 auto 16px;}
+  header.doc h1{font-size:30px;font-weight:800;letter-spacing:.01em;margin:0 0 8px;}
+  header.doc .sub{color:var(--muted);font-size:16px;font-style:italic;margin:0;}
+  a{color:var(--accent);}
+
+  /* sign-in gate */
+  #signedOut{text-align:center;padding:40px 0;}
+  button.google{font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--accent);color:#fff;border:0;padding:12px 22px;border-radius:6px;cursor:pointer;}
+  button.google:hover{background:#63482f;}
+  #notAllowed{text-align:center;padding:40px 0;color:var(--danger);}
+
+  .area{margin-bottom:36px;}
+  .area:last-child{margin-bottom:0;}
+  .area-head{display:flex;align-items:baseline;gap:14px;margin:0 0 14px;
+    border-bottom:1.5px solid var(--rule);padding-bottom:6px;}
+  .area-head h2{font-size:23px;font-weight:600;margin:0;}
+  .area.deceased .area-head h2{color:var(--accent);}
+  .area.ill .area-head h2{color:var(--accent2);}
+
+  form.entryForm{background:var(--band);border:1px solid var(--rule);border-radius:8px;
+    padding:16px 18px;margin-bottom:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px 14px;}
+  form.entryForm label{display:flex;flex-direction:column;gap:4px;
+    font:13px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#5c5347;}
+  form.entryForm input[type=text],form.entryForm input[type=date],form.entryForm select{
+    font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);
+    border:1px solid var(--rule);border-radius:5px;padding:7px 9px;background:#fff;}
+  form.entryForm .check{flex-direction:row;align-items:center;gap:7px;}
+  form.entryForm .check input{width:16px;height:16px;}
+  form.entryForm .actions{grid-column:1/-1;display:flex;gap:10px;margin-top:2px;}
+  button.add{font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--accent2);color:#fff;border:0;padding:9px 18px;border-radius:6px;cursor:pointer;}
+  button.add:hover{background:#3a5a4d;}
+
+  table.list{width:100%;border-collapse:collapse;}
+  table.list th{text-align:left;font:12px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    color:var(--muted);text-transform:uppercase;letter-spacing:.03em;
+    border-bottom:1.5px solid var(--rule);padding:6px 8px;}
+  table.list td{padding:8px;border-bottom:1px solid #ece6db;vertical-align:top;
+    font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
+  table.list td input[type=text],table.list td input[type=date],table.list td select{
+    width:100%;font:14px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    border:1px solid var(--rule);border-radius:4px;padding:5px 6px;background:#fff;}
+  table.list td.check{text-align:center;}
+  table.list td input[type=checkbox]{width:16px;height:16px;}
+  .row-actions{display:flex;gap:6px;white-space:nowrap;}
+  button.mini{font:13px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    border:1px solid var(--rule);background:#fff;color:var(--ink);
+    padding:6px 10px;border-radius:5px;cursor:pointer;}
+  button.mini:hover{background:var(--band);}
+  button.mini.save{border-color:var(--accent2);color:var(--accent2);}
+  button.mini.contacted{border-color:var(--accent2);color:var(--accent2);}
+  button.mini.danger{border-color:var(--danger);color:var(--danger);}
+  .empty{color:var(--muted);font-style:italic;padding:10px 8px;}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <span class="status" id="status">Loading…</span>
+</div>
+<div class="sheet">
+  <header class="doc">
+    <img class="logo" src="nyzc-logo.png" alt="New York Zen Center">
+    <h1>Manage the Sick &amp; Recently Deceased List</h1>
+    <p class="sub">Edits here appear on <a href="sicklist.html">sicklist.html</a> immediately.</p>
+  </header>
+
+  <div id="signedOut">
+    <button class="google" id="signInBtn">Sign in with Google</button>
+  </div>
+
+  <div id="notAllowed" style="display:none">
+    Signed in, but this account isn't allowed to manage this list.
+    <div style="margin-top:14px"><button class="mini" id="signOutBtn2">Sign out</button></div>
+  </div>
+
+  <div id="admin" style="display:none">
+    <div class="toolbar" style="padding:0 0 20px;justify-content:space-between">
+      <span class="status" id="whoami"></span>
+      <button class="mini" id="signOutBtn">Sign out</button>
+    </div>
+
+    <section class="area deceased">
+      <div class="area-head"><h2>Recently Deceased</h2></div>
+      <form class="entryForm" id="deceasedForm">
+        <label>Name <input type="text" name="name" required></label>
+        <label>Spelling <input type="text" name="spelling" placeholder="(optional)"></label>
+        <label>Date of passing <input type="date" name="date"></label>
+        <label>Pronoun
+          <select name="pronoun">
+            <option value="their">their</option>
+            <option value="his">his</option>
+            <option value="her">her</option>
+          </select>
+        </label>
+        <div class="actions"><button type="submit" class="add">Add</button></div>
+      </form>
+      <table class="list">
+        <thead><tr><th>Name</th><th>Spelling</th><th>Date</th><th>Pronoun</th><th></th></tr></thead>
+        <tbody id="deceasedRows"></tbody>
+      </table>
+    </section>
+
+    <section class="area ill">
+      <div class="area-head"><h2>Sick</h2></div>
+      <form class="entryForm" id="sickForm">
+        <label>Name <input type="text" name="name" required></label>
+        <label>Spelling <input type="text" name="spelling" placeholder="(optional)"></label>
+        <label>Referred by <input type="text" name="member" placeholder="(optional)"></label>
+        <label>Relationship <input type="text" name="rel" placeholder="(optional)"></label>
+        <label>Added <input type="date" name="added"></label>
+        <label>Last contacted <input type="date" name="lastContacted"></label>
+        <label class="check"><input type="checkbox" name="contactNotNeeded"> Contact not needed</label>
+        <div class="actions"><button type="submit" class="add">Add</button></div>
+      </form>
+      <table class="list">
+        <thead><tr><th>Name</th><th>Spelling</th><th>Referred by</th><th>Relationship</th>
+          <th>Added</th><th>Last contacted</th><th>Not needed</th><th></th></tr></thead>
+        <tbody id="sickRows"></tbody>
+      </table>
+    </section>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {
+  getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+/* Client-side allowlist is UX only — the real enforcement is firestore.rules,
+   which rejects writes from anyone but this email regardless of what runs here. */
+const ADMIN_EMAIL = "kanshin@zencare.org";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCe8U26iKyXUPo8TbJBo4b7KgSK4vcnl00",
+  authDomain: "kanshin-sicklist.firebaseapp.com",
+  projectId: "kanshin-sicklist",
+  storageBucket: "kanshin-sicklist.firebasestorage.app",
+  messagingSenderId: "1047654379439",
+  appId: "1:1047654379439:web:98a0d2abf2b3947672895a"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+function esc(s){ return (s||"").replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m])); }
+function todayISO(){
+  const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function val(el,name){ return (el.elements[name].value||"").trim(); }
+
+const status = document.getElementById("status");
+const signedOutEl = document.getElementById("signedOut");
+const notAllowedEl = document.getElementById("notAllowed");
+const adminEl = document.getElementById("admin");
+
+document.getElementById("signInBtn").addEventListener("click", ()=>{
+  signInWithPopup(auth, new GoogleAuthProvider()).catch(err=>{
+    status.textContent = "Sign-in failed: "+err.message;
+  });
+});
+document.getElementById("signOutBtn").addEventListener("click", ()=>signOut(auth));
+document.getElementById("signOutBtn2").addEventListener("click", ()=>signOut(auth));
+
+let unsubDeceased=null, unsubSick=null;
+onAuthStateChanged(auth, user=>{
+  if(unsubDeceased){ unsubDeceased(); unsubDeceased=null; }
+  if(unsubSick){ unsubSick(); unsubSick=null; }
+  signedOutEl.style.display="none";
+  notAllowedEl.style.display="none";
+  adminEl.style.display="none";
+  if(!user){
+    signedOutEl.style.display="block";
+    status.textContent="Not signed in";
+    return;
+  }
+  if(user.email!==ADMIN_EMAIL){
+    notAllowedEl.style.display="block";
+    status.textContent="Signed in as "+user.email;
+    return;
+  }
+  adminEl.style.display="block";
+  document.getElementById("whoami").textContent="Signed in as "+user.email;
+  status.textContent="Live";
+  unsubDeceased = onSnapshot(collection(db,"deceased"), snap=>renderDeceased(snap), err=>{
+    status.textContent="Deceased list error: "+err.message;
+  });
+  unsubSick = onSnapshot(collection(db,"sick"), snap=>renderSick(snap), err=>{
+    status.textContent="Sick list error: "+err.message;
+  });
+});
+
+/* ---------- Deceased ---------- */
+function renderDeceased(snap){
+  const tbody=document.getElementById("deceasedRows");
+  if(snap.empty){ tbody.innerHTML='<tr><td colspan="5" class="empty">No entries yet.</td></tr>'; return; }
+  const rows=[];
+  snap.forEach(d=>{
+    const o=d.data();
+    rows.push({id:d.id,name:o.name||"",spelling:o.spelling||"",date:o.date||"",pronoun:o.pronoun||"their"});
+  });
+  rows.sort((a,b)=>a.name.localeCompare(b.name));
+  tbody.innerHTML = rows.map(o=>`
+    <tr data-id="${esc(o.id)}">
+      <td><input type="text" data-field="name" value="${esc(o.name)}"></td>
+      <td><input type="text" data-field="spelling" value="${esc(o.spelling)}"></td>
+      <td><input type="date" data-field="date" value="${esc(o.date)}"></td>
+      <td><select data-field="pronoun">
+        <option value="their" ${o.pronoun==="their"?"selected":""}>their</option>
+        <option value="his" ${o.pronoun==="his"?"selected":""}>his</option>
+        <option value="her" ${o.pronoun==="her"?"selected":""}>her</option>
+      </select></td>
+      <td class="row-actions">
+        <button class="mini save" data-action="save">Save</button>
+        <button class="mini danger" data-action="delete">Delete</button>
+      </td>
+    </tr>`).join("");
+}
+document.getElementById("deceasedForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const f=e.target;
+  await addDoc(collection(db,"deceased"), {
+    name: val(f,"name"), spelling: val(f,"spelling"),
+    date: val(f,"date"), pronoun: val(f,"pronoun")||"their"
+  });
+  f.reset();
+});
+document.getElementById("deceasedRows").addEventListener("click", async e=>{
+  const btn=e.target.closest("button"); if(!btn) return;
+  const tr=btn.closest("tr"); const id=tr.dataset.id;
+  if(btn.dataset.action==="delete"){
+    if(!confirm("Delete this entry?")) return;
+    await deleteDoc(doc(db,"deceased",id));
+  } else if(btn.dataset.action==="save"){
+    const fields={};
+    tr.querySelectorAll("[data-field]").forEach(el=>{ fields[el.dataset.field]=el.value.trim(); });
+    await updateDoc(doc(db,"deceased",id), fields);
+  }
+});
+
+/* ---------- Sick ---------- */
+function renderSick(snap){
+  const tbody=document.getElementById("sickRows");
+  if(snap.empty){ tbody.innerHTML='<tr><td colspan="8" class="empty">No entries yet.</td></tr>'; return; }
+  const rows=[];
+  snap.forEach(d=>{
+    const o=d.data();
+    rows.push({
+      id:d.id, name:o.name||"", spelling:o.spelling||"", member:o.member||"", rel:o.rel||"",
+      added:o.added||"", lastContacted:o.lastContacted||"", contactNotNeeded:!!o.contactNotNeeded
+    });
+  });
+  rows.sort((a,b)=>a.name.localeCompare(b.name));
+  tbody.innerHTML = rows.map(o=>`
+    <tr data-id="${esc(o.id)}">
+      <td><input type="text" data-field="name" value="${esc(o.name)}"></td>
+      <td><input type="text" data-field="spelling" value="${esc(o.spelling)}"></td>
+      <td><input type="text" data-field="member" value="${esc(o.member)}"></td>
+      <td><input type="text" data-field="rel" value="${esc(o.rel)}"></td>
+      <td><input type="date" data-field="added" value="${esc(o.added)}"></td>
+      <td><input type="date" data-field="lastContacted" value="${esc(o.lastContacted)}"></td>
+      <td class="check"><input type="checkbox" data-field="contactNotNeeded" ${o.contactNotNeeded?"checked":""}></td>
+      <td class="row-actions">
+        <button class="mini contacted" data-action="contacted">Contacted today</button>
+        <button class="mini save" data-action="save">Save</button>
+        <button class="mini danger" data-action="delete">Delete</button>
+      </td>
+    </tr>`).join("");
+}
+document.getElementById("sickForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const f=e.target;
+  await addDoc(collection(db,"sick"), {
+    name: val(f,"name"), spelling: val(f,"spelling"),
+    member: val(f,"member"), rel: val(f,"rel"),
+    added: val(f,"added")||todayISO(),
+    lastContacted: val(f,"lastContacted"),
+    contactNotNeeded: f.elements.contactNotNeeded.checked
+  });
+  f.reset();
+});
+document.getElementById("sickRows").addEventListener("click", async e=>{
+  const btn=e.target.closest("button"); if(!btn) return;
+  const tr=btn.closest("tr"); const id=tr.dataset.id;
+  if(btn.dataset.action==="delete"){
+    if(!confirm("Delete this entry?")) return;
+    await deleteDoc(doc(db,"sick",id));
+  } else if(btn.dataset.action==="contacted"){
+    await updateDoc(doc(db,"sick",id), {lastContacted: todayISO()});
+  } else if(btn.dataset.action==="save"){
+    const fields={};
+    tr.querySelectorAll("[data-field]").forEach(el=>{
+      fields[el.dataset.field] = el.type==="checkbox" ? el.checked : el.value.trim();
+    });
+    await updateDoc(doc(db,"sick",id), fields);
+  }
+});
+</script>
+</body>
+</html>
