@@ -134,7 +134,7 @@
 <div class="toolbar">
   <span class="status" id="status">Loading…</span>
   <label class="toggle" for="asOfDate">As of <input type="date" id="asOfDate"></label>
-  <label class="toggle"><input type="checkbox" id="hideReport"> Hide report</label>
+  <label class="toggle"><input type="checkbox" id="hideReport" checked> Hide report</label>
   <label class="toggle"><input type="checkbox" id="skipSick"> Skip the sick list</label>
   <button class="print" onclick="window.print()">Print</button>
 </div>
@@ -414,6 +414,7 @@ async function load(){
   }
 }
 document.getElementById("asOfDate").addEventListener("change", renderAll);
+document.body.classList.toggle("hide-report", document.getElementById("hideReport").checked);
 document.getElementById("hideReport").addEventListener("change",function(e){
   document.body.classList.toggle("hide-report", e.target.checked);
 });
