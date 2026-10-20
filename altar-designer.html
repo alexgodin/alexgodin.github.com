@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Altar Designer</title>
+<style>
+:root{--bg:#f6f4ef;--ink:#222;--mut:#666;--line:#d8d3c8;--acc:#1a5fb4}
+*{box-sizing:border-box}
+body{margin:0;font-family:Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+header{display:flex;align-items:center;gap:16px;padding:12px 20px;border-bottom:1px solid var(--line);background:#fff}
+header h1{font-size:18px;margin:0;flex:1}
+button{font:inherit;padding:7px 14px;border:1px solid #999;background:#fff;border-radius:6px;cursor:pointer}
+button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
+.layout{display:grid;grid-template-columns:290px minmax(0,1fr) 360px;gap:16px;padding:16px;align-items:start}
+.panel{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px}
+.panel h2{font-size:13px;margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
+.ctl{margin-bottom:14px}
+.ctl label{display:flex;justify-content:space-between;font-size:13px;font-weight:bold}
+.ctl small{display:block;color:var(--mut);font-size:11px;margin:1px 0 3px}
+.ctl .row{display:flex;gap:8px;align-items:center}
+.ctl input[type=range]{flex:1}
+.ctl input[type=number]{width:64px;padding:3px}
+.stats{font-size:13px;line-height:1.6;margin:0;padding:0;list-style:none}
+.stats b{font-variant-numeric:tabular-nums}
+.opts label{display:block;font-size:13px;margin:4px 0}
+svg{width:100%;height:auto;display:block}
+.views{display:flex;flex-direction:column;gap:16px}
+.printsum{display:none}
+.legend{font-size:12px;color:var(--mut);margin-top:6px}
+.sw{display:inline-block;width:12px;height:10px;border:1px solid #7a4d22;margin:0 4px 0 10px;vertical-align:middle}
+@page{size:17in 11in landscape;margin:.35in}
+@media print{
+  body{background:#fff}
+  header button,.controls,.noprint{display:none!important}
+  header{border:0;padding:0 0 6px}
+  .layout{display:block;padding:0}
+  .panel{border:0;padding:0}
+  .printsum{display:block;font-size:11px;margin:0 0 6px}
+  .views{gap:.1in}
+  .zendo{break-before:page;break-inside:avoid;text-align:center}
+  .zendo h2{text-align:left}
+  #zendo{height:9.4in;width:auto;max-width:100%;margin:0 auto}
+  .zendo .legend{margin-top:.05in}
+  .panel,.views>div{break-inside:avoid}
+}
+@media (max-width:1100px){.layout{grid-template-columns:1fr}}
+</style></head><body>
+<header><h1>Altar Designer <span style="font-weight:normal;color:var(--mut);font-size:13px">— all dimensions in inches, drawn to scale</span></h1>
+<button id="reset">Reset</button><button class="primary" id="print">Print</button></header>
+<div class="layout">
+ <aside class="controls">
+  <div class="panel"><h2>Adjust</h2><div id="ctls"></div>
+   <div class="opts">
+    <label><input type="checkbox" id="showOld" checked> Show original altar (50% opacity)</label>
+    <label><input type="checkbox" id="overlay"> Overlay it on the new altar (instead of alongside)</label>
+   </div></div>
+  <div class="panel" style="margin-top:16px"><h2>Result</h2><ul class="stats" id="stats"></ul></div>
+ </aside>
+ <section class="views">
+  <div class="printsum panel" id="psum"></div>
+  <div class="panel"><h2>Front view</h2><svg id="front"></svg></div>
+  <div class="panel"><h2>Top view</h2><svg id="top"></svg></div>
+  <div class="legend noprint">
+   <span class="sw" style="background:#e3c28f"></span>platform / border
+   <span class="sw" style="background:#efd9ae"></span>offering tier (tier 1)
+   <span class="sw" style="background:#d3b27a"></span>water tier
+   <span class="sw" style="background:#b9803f"></span>statue riser (tier 2)
+   <span class="sw" style="background:#fff;opacity:.5"></span>original altar at 50%
+  </div>
+ </section>
+ <section class="panel zendo"><h2>In the zendo</h2><svg id="zendo"></svg>
+  <div class="legend">Room 20′11″ × 50′. Altar centered on the front wall. Ghost = original altar footprint (50%).</div></section>
+</div>
+<script>
+const ZENDO = `<path d="M60 0V600" stroke="#c9ced6" stroke-width="0.4"/><path d="M120 0V600" stroke="#c9ced6" stroke-width="0.4"/><path d="M180 0V600" stroke="#c9ced6" stroke-width="0.4"/><path d="M240 0V600" stroke="#c9ced6" stroke-width="0.4"/><path d="M0 60H251" stroke="#c9ced6" stroke-width="0.4"/><path d="M0 120H251" stroke="#c9ced6" stroke-width="0.4"/><path d="M0 180H251" stroke="#c9ced6" stroke-width="0.4"/><path d="M0 240H251" stroke="#c9ced6" stroke-width="0.4"/><path d="M0 300H251" stroke="#c9ced6" stroke-width="0.4"/><path d="M0 360H251" stroke="#c9ced6" stroke-width="0.4"/><path d="M0 420H251" stroke="#c9ced6" stroke-width="0.4"/><path d="M0 480H251" stroke="#c9ced6" stroke-width="0.4"/><path d="M0 540H251" stroke="#c9ced6" stroke-width="0.4"/><!-- Room -->
+  
+  
+  <rect x="0" y="0" width="251" height="600" fill="none" stroke="#2f6fd6" stroke-width="1.5"/>
+
+  <!-- Top tables -->
+  <rect x="0" y="0" width="81" height="32" fill="#cfd5dc" stroke="#7b8594" stroke-width="0.8"/>
+  <rect x="169" y="0" width="82" height="32" fill="#cfd5dc" stroke="#7b8594" stroke-width="0.8"/>
+  <text x="40.5" y="19" text-anchor="middle" font-size="6" fill="#444">81" × 32"</text>
+  <text x="210" y="19" text-anchor="middle" font-size="6" fill="#444">81" × 32"</text>
+
+  <!-- Front-row single zabutons -->
+  <rect x="3" y="43" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+  <rect x="44" y="43" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+  <rect x="178" y="43" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+  <rect x="223" y="43" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+
+  <!-- Outer left column (5 rows, then wall seats) -->
+  <rect x="2" y="95" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="2" y="126" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="2" y="157" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+  <rect x="2" y="188" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="2" y="219" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+
+  <!-- Inner left column x=46 -->
+  <rect x="46" y="95" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="46" y="126" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="46" y="157" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="46" y="188" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+  <rect x="46" y="219" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="46" y="250" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="46" y="281" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="46" y="312" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+  <rect x="46" y="343" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="46" y="374" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="46" y="405" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="46" y="436" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+  <rect x="46" y="467" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+
+  <!-- Inner right column x=178 -->
+  <rect x="178" y="95" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="178" y="126" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="178" y="157" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="178" y="188" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+  <rect x="178" y="219" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="178" y="250" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="178" y="281" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="178" y="312" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+  <rect x="178" y="343" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="178" y="374" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="178" y="405" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="178" y="436" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+  <rect x="178" y="467" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+
+  <!-- Outer right column x=223 -->
+  <rect x="223" y="95" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="223" y="126" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="223" y="157" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="223" y="188" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+  <rect x="223" y="219" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="223" y="250" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="223" y="281" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="223" y="312" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+  <rect x="223" y="343" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="223" y="374" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="223" y="405" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/><rect x="223" y="436" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+  <rect x="223" y="467" width="26" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.5"/>
+
+  <!-- Left-wall seats: 23" wide, 22.5" pitch, 12 units -->
+  <g fill="#e9ecf0" stroke="#6f7886" stroke-width="0.6">
+    <rect x="2" y="257" width="23" height="21.5"/><rect x="2" y="279.5" width="23" height="21.5"/>
+    <rect x="2" y="302" width="23" height="21.5"/><rect x="2" y="324.5" width="23" height="21.5"/>
+    <rect x="2" y="347" width="23" height="21.5"/><rect x="2" y="369.5" width="23" height="21.5"/>
+    <rect x="2" y="392" width="23" height="21.5"/><rect x="2" y="414.5" width="23" height="21.5"/>
+    <rect x="2" y="437" width="23" height="21.5"/><rect x="2" y="459.5" width="23" height="21.5"/>
+    <rect x="2" y="482" width="23" height="21.5"/>
+  </g>
+
+  <!-- Center table 36" x 72" -->
+  <rect x="107" y="373" width="36" height="72" fill="#cfd5dc" stroke="#6f7886" stroke-width="1"/>
+  <text x="125" y="406" text-anchor="middle" font-size="6" fill="#444">36" × 72"</text>
+  <text x="125" y="397" text-anchor="middle" font-size="6" font-weight="bold" fill="#444">haishiki</text><text x="125" y="415" text-anchor="middle" font-size="5" fill="#666">(3' × 6')</text>
+
+  <!-- Zendo label -->
+  <text x="125.5" y="300" text-anchor="middle" font-size="14" fill="#9aa1ab">Zendo</text>
+
+  <!-- Front objects -->
+  
+  
+  
+  
+
+  <circle cx="44" cy="558" r="9.5" fill="#c3cad3" stroke="#6f7886" stroke-width="0.7"/>
+  <circle cx="207" cy="558" r="9.5" fill="#c3cad3" stroke="#6f7886" stroke-width="0.7"/>
+  <rect x="-14" y="-15" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.7" transform="translate(22 572) rotate(-20)"/>
+  <rect x="-14" y="-15" width="28" height="30" fill="#dfe3e8" stroke="#8a93a0" stroke-width="0.7" transform="translate(229 572) rotate(25)"/>
+
+  <!-- Dimension lines -->
+  <g stroke="#d6336c" stroke-width="0.6" fill="none">
+    <path d="M0 -12H251"/><path d="M0 -16V-8M251 -16V-8"/>
+    <path d="M-14 0V600"/><path d="M-18 0H-10M-18 600H-10"/>
+    <path d="M74 475H178" stroke-dasharray="3 2"/>
+  </g>
+  <g fill="#d6336c" font-size="7" text-anchor="middle">
+    <text x="125.5" y="-15">20'11" (251")</text>
+    <text transform="translate(-20 300) rotate(-90)">50' (600")</text>
+    <text x="126" y="472">center aisle ≈ 104" (8'8")</text>
+  </g>
+  <g fill="#d6336c" font-size="5.5" text-anchor="middle">
+    <text x="34" y="86">gap ≈ 18"</text>
+  </g>
+  <path d="M28 90H46" stroke="#d6336c" stroke-width="0.6"/>
+
+  `;
+const DEF = {p1:2,rw:40,rd:21,bs:18,bf:7,height:36.5,t1:3,t2:13.5,wall:18,ww:6,wh:8};
+const CTL = [
+ ['p1','Padding, tier 1','Space around the items on the offering tier (sides + front)',0,4,0.25],
+ ['rw','Tier 2 width (X)','Statue riser width, left to right',16,64,0.5],
+ ['rd','Tier 2 depth (Y)','Statue riser depth, front to back (grows toward the wall)',6,36,0.5],
+ ['bf','Border, front','Platform border in front of the offering tier',0,14,0.5],
+ ['bs','Border, sides','Platform border beside the offering tier (both sides); none at back',0,36,0.5],
+ ['wall','Distance from wall','Gap between the altar back and the wall (heater clearance); shown in the zendo view',0,36,0.5],
+ ['height','Overall height','Altar platform height above the floor',25,48,0.5],
+ ['t1','Tier 1 height','Offering tier, above the platform',0,6,0.25],
+ ['ww','Water tier width','Water-bowl tier around the riser on 3 sides (left, right, front): how far it extends',0,12,0.25],
+ ['wh','Water tier height','Water-bowl tier, above the platform (between tier 1 and tier 2)',0,16,0.25],
+ ['t2','Tier 2 height','Statue riser, above the platform',0,27,0.25],
+];
+let P = Object.assign({},DEF);
+
+// ---------- drawing helpers (ported from the Python generators) ----------
+let S=6, T=0, o=[];
+const a=s=>o.push(s);
+const f1=n=>(+n).toFixed(1);
+const fmt=n=>String(+(+n).toFixed(2));
+const zp=z=>T-z*S;
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function txt(x,y,s,size=12,anchor='start',weight='normal',fill='#222',rot=null){
+  const r=rot!==null?` transform="rotate(${rot} ${x} ${y})"`:'';
+  a(`<text x="${f1(x)}" y="${f1(y)}" font-size="${size}" text-anchor="${anchor}" font-weight="${weight}" fill="${fill}"${r}>${esc(s)}</text>`);}
+function ln(x1,y1,x2,y2,c='#222',w=1,dash=null){a(`<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="${c}" stroke-width="${w}"${dash?` stroke-dasharray="${dash}"`:''}/>`);}
+function rect(x,y,w,h,fill='none',stroke='#333',sw=1,rx=0,extra=''){a(`<rect x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="${f1(h)}" rx="${rx}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" ${extra}/>`);}
+function circ(x,y,r,fill='none',stroke='#333',sw=1,extra=''){a(`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r)}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" ${extra}/>`);}
+function poly(pts,fill,stroke='#333',sw=1){a(`<polygon points="${pts.map(p=>f1(p[0])+','+f1(p[1])).join(' ')}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round"/>`);}
+const DIM='#1a5fb4', EXT='#8aa4c8';
+function arrowhead(x,y,ux,uy){const px=-uy,py=ux;
+  poly([[x,y],[x+ux*7+px*2.8,y+uy*7+py*2.8],[x+ux*7-px*2.8,y+uy*7-py*2.8]],DIM,DIM,0);}
+function dimH(x1,x2,y,label,e1,e2){
+  [[x1,e1],[x2,e2]].forEach(([xx,ey])=>{if(ey!=null)ln(xx,ey,xx,y+(y>ey?4:-4),EXT,0.7,'2,2');});
+  ln(x1,y,x2,y,DIM,1);arrowhead(x1,y,1,0);arrowhead(x2,y,-1,0);
+  txt((x1+x2)/2,y-4,label,12,'middle','normal',DIM);}
+function dimV(x,y1,y2,label,ex1,ex2,side='left'){
+  [[y1,ex1],[y2,ex2]].forEach(([yy,ex])=>{if(ex!=null)ln(ex,yy,x+(x>ex?4:-4),yy,EXT,0.7,'2,2');});
+  ln(x,y1,x,y2,DIM,1);const sg=y2>y1?1:-1;arrowhead(x,y1,0,sg);arrowhead(x,y2,0,-sg);
+  txt(side==='left'?x-4:x+12,(y1+y2)/2,label,12,'middle','normal',DIM,-90);}
+
+const WOOD='#d9a766',WOODD='#7a4d22',DARK='#3b2a22',GOLD='#e3b93c',GOLDD='#8a6a10',ORNG='#f28c28',ORNGD='#a8530b',BRONZE='#9a7640',STAT='#6e4d3a';
+
+function d_orchid(cx,w){const k=w/9,X=u=>cx+u*k*S;
+  rect(X(-4.5),zp(28),9*k*S,28*S,'none','#999',0.8,0,'stroke-dasharray="4,3"');
+  [[-4.3,11.5],[4.3,10.5],[-3.2,9],[3.2,8.5]].forEach(([u,z])=>a(`<path d="M${f1(X(0))},${f1(zp(7))} Q${f1(X(u*0.9))},${f1(zp(z+2))} ${f1(X(u))},${f1(zp(z))}" fill="none" stroke="#3f7d3a" stroke-width="5" stroke-linecap="round"/>`));
+  [[-3.5,25],[2.6,23.2],[3.5,21]].forEach(([u,z])=>a(`<path d="M${f1(X(0))},${f1(zp(7))} C${f1(X(0))},${f1(zp(15))} ${f1(X(u*0.4))},${f1(zp(z-4))} ${f1(X(u))},${f1(zp(z))}" fill="none" stroke="#6b5a3a" stroke-width="1.5"/>`));
+  a(`<path d="M${f1(X(0))},${f1(zp(7))} C${f1(X(0))},${f1(zp(16))} ${f1(X(-1))},${f1(zp(22))} ${f1(X(-0.5))},${f1(zp(26.2))}" fill="none" stroke="#6b5a3a" stroke-width="1.5"/>`);
+  rect(X(-3.5),zp(7),7*k*S,7*S,'#cfe3d4','#5d7d66',1);
+  [[-3.5,25],[-2.2,27],[-0.5,26.2],[1.2,25],[2.6,23.2],[3.5,21],[-3,22]].forEach(([u,z])=>{circ(X(u),zp(z),8*Math.min(1,k+0.15),'#a23a96','#6a1f63',1);circ(X(u),zp(z),2.2,'#f2d24a','none',0);});}
+function d_candle(cx,w){const k=w/6,X=u=>cx+u*k*S;
+  rect(X(-2.25),zp(8),4.5*k*S,7.7*S,'#f6efdc','#a89a7a',1);
+  a(`<ellipse cx="${f1(cx)}" cy="${f1(zp(8.8))}" rx="3" ry="6" fill="#ffb02e"/>`);
+  rect(X(-3),zp(12),6*k*S,12*S,'#bfe0ee','#4d7f93',1.2,0,'fill-opacity="0.35"');}
+function d_riser_old(cx,w){rect(cx-w*S/2,zp(6),w*S,6*S,DARK,'#1d130e',1);ln(cx-w*S/2,zp(6)+4,cx+w*S/2,zp(6)+4,'#6a5446',1);}
+const PROF=[[6.0,0],[6.0,1.5],[5.0,4],[4.4,10],[3.6,18],[3.8,24],[3.6,27.5],[2.4,29.2],[1.1,30]];
+function d_statue_old(cx,w,z0=6){const f=w/12;
+  poly(PROF.map(([hw,v])=>[cx+hw*f*S,zp(z0+v)]).concat(PROF.slice().reverse().map(([hw,v])=>[cx-hw*f*S,zp(z0+v)])),STAT,'#2f1d12',1);
+  a(`<ellipse cx="${f1(cx)}" cy="${f1(zp(z0+32))}" rx="${f1(1.9*f*S)}" ry="${f1(2.2*S)}" fill="#b0785c" stroke="#2f1d12"/>`);
+  const rr=0.9*f;circ(cx,zp(z0+35-rr),rr*S,STAT,'#2f1d12',1);}
+function d_statue_new(cx,z0){const f=15.5/12,hs=57/35;
+  poly(PROF.map(([hw,v])=>[cx+hw*f*S,zp(z0+v*hs)]).concat(PROF.slice().reverse().map(([hw,v])=>[cx-hw*f*S,zp(z0+v*hs)])),STAT,'#2f1d12',1);
+  const rr=0.9*f;
+  a(`<ellipse cx="${f1(cx)}" cy="${f1(zp(z0+52.1))}" rx="${f1(1.9*f*S)}" ry="${f1(2.6*S)}" fill="#b0785c" stroke="#2f1d12"/>`);
+  circ(cx,zp(z0+57-rr),rr*S,STAT,'#2f1d12',1);}
+function d_gold(cx,w){const k=w/5,X=u=>cx+u*k*S;
+  [[-1.7,11.5],[1.7,12.3],[0,14.5],[-1.2,8.7],[1.3,9.2]].forEach(([u,z])=>ln(X(0),zp(6),X(u),zp(z),GOLDD,1.2));
+  [[-1.7,11.5,.8],[1.7,12.3,.8],[0,14.5,1.0],[-1.2,8.7,.7],[1.3,9.2,.7]].forEach(([u,z,r])=>circ(X(u),zp(z),r*S*k,GOLD,GOLDD,1));
+  poly([[X(-1.6),zp(0)],[X(1.6),zp(0)],[X(2.2),zp(3)],[X(1.0),zp(6)],[X(-1.0),zp(6)],[X(-2.2),zp(3)]],'#1c1c1c','#000',1);}
+function d_orange(cx){
+  rect(cx-2.5*S,zp(1),5*S,1*S,DARK,'#1d130e');rect(cx-0.6*S,zp(12.4),1.2*S,11.4*S,DARK,'#1d130e');
+  poly([[cx-5*S,zp(13.4)],[cx+5*S,zp(13.4)],[cx+3.6*S,zp(12.4)],[cx-3.6*S,zp(12.4)]],DARK,'#1d130e');
+  [[-1.5,14.9],[1.5,14.9],[0,17.5]].forEach(([u,z])=>circ(cx+u*S,zp(z),1.5*S,ORNG,ORNGD,1));}
+function d_bowl(cx,w){const k=w/7.5,X=u=>cx+u*k*S;
+  a(`<path d="M${f1(X(-3.75))},${f1(zp(3.5))} L${f1(X(3.75))},${f1(zp(3.5))} C${f1(X(3.6))},${f1(zp(1.5))} ${f1(X(2.5))},${f1(zp(0))} ${f1(X(1.8))},${f1(zp(0))} L${f1(X(-1.8))},${f1(zp(0))} C${f1(X(-2.5))},${f1(zp(0))} ${f1(X(-3.6))},${f1(zp(1.5))} ${f1(X(-3.75))},${f1(zp(3.5))} Z" fill="${BRONZE}" stroke="#4a3515" stroke-width="1"/>`);}
+function d_cup(cx,w){
+  rect(cx-w*S/2+2,zp(4.8),w*S-4,4.5*S,'#8fd0ec','#4d7f93',0.8,0,'fill-opacity="0.8"');
+  rect(cx-w*S/2,zp(5.5),w*S,5.5*S,'#d8eef7','#4d7f93',1.2,0,'fill-opacity="0.35"');
+  ln(cx-w*S/2+2,zp(4.8),cx+w*S/2-2,zp(4.8),'#4d7f93',0.8);}
+
+// ---------- layout ----------
+const FRONTZONE=16; // depth of the front items zone ahead of the riser
+function layout(p){
+  const Bs=p.bs,Bf=p.bf,P1=p.p1,rw=p.rw,rd=p.rd,ww=p.ww;
+  const E=Math.max(50,rw+2*ww+15),ED=FRONTZONE+ww+rd,cx=E/2;
+  const loc={riser:[cx,ED-rd/2,rw,rd],statue:[cx,ED-rd/2,15.5,15.5],bowl:[cx,3.75,7.5,7.5],cup:[cx,FRONTZONE+ww/2,4.25,4.25],water:[cx,FRONTZONE+(ww+rd)/2,rw+2*ww,rd+ww],
+    goldL:[cx-8,13,5,5],goldR:[cx+8,13,5,5],orangeL:[cx-10.5,5,10,10],orangeR:[cx+10.5,5,10,10],orchid:[cx-20.5,5,9,9],candle:[cx+19,4,6,6]};
+  const L={};for(const k in loc){const [x,y,w,d]=loc[k];L[k]=[Bs+P1+x,Bf+P1+y,w,d];}
+  return {L,E,ED,Wd:E+2*P1+2*Bs,Dp:Bf+P1+ED,tw:E+2*P1};
+}
+const OLD={orchid:[9,25.5,9,9],candle:[52,6.2,6,6],riser:[32.8,23.5,20,9],statue:[32.8,23.5,12,7.5],
+  goldL:[23.9,10.9,5,5],goldR:[37.0,11.4,5,5],orangeL:[16.7,9.2,10,10],orangeR:[43.7,9.9,10,10],bowl:[29.6,5.2,7.5,7.5],cup:[30.5,11.9,4.25,4.25]};
+const OLDW=55.5,OLDD=30.5,OLDH=36.5;
+
+function topItems(L,tx,ty,old,s,k){const sv=S;S=s;
+  const pos=n=>{const [c,cy,w,d]=L[n];return [tx(c),ty(cy),w,d];};
+  let X,Y,w,d;
+  if(old){[X,Y,w,d]=pos('riser');rect(X-w*S/2,Y-d*S/2,w*S,d*S,DARK,'#1d130e',k);
+    [X,Y,w,d]=pos('statue');rect(X-w*S/2,Y-d*S/2,w*S,d*S,STAT,'#2f1d12',k,6*k);circ(X,Y,1.9*S,'#b0785c','#2f1d12',k);}
+  else{if(P.ww>0&&P.wh>0){[X,Y,w,d]=pos('water');rect(X-w*S/2,Y-d*S/2,w*S,d*S,'#d3b27a',WOODD,1.2*k);}
+    [X,Y,w,d]=pos('riser');rect(X-w*S/2,Y-d*S/2,w*S,d*S,'#b9803f',WOODD,1.2*k);
+    [X,Y,w,d]=pos('statue');circ(X,Y,7.75*S,STAT,'#2f1d12',1.2*k);circ(X,Y,5.4*S,'#7a5844','#2f1d12',k);circ(X,Y,2.0*S,'#b0785c','#2f1d12',k);}
+  [X,Y,w,d]=pos('orchid');
+  rect(X-w*S/2,Y-d*S/2,w*S,d*S,'none','#999',0.8*k,0,`stroke-dasharray="${4*k},${3*k}"`);
+  [20,80,140,200,260,320].forEach(ang=>a(`<line x1="${f1(X)}" y1="${f1(Y)}" x2="${f1(X+4.3*S*Math.cos(ang*Math.PI/180))}" y2="${f1(Y-4.3*S*Math.sin(ang*Math.PI/180))}" stroke="#3f7d3a" stroke-width="${4*k}" stroke-linecap="round"/>`));
+  circ(X,Y,3.5*S,'#cfe3d4','#5d7d66',k);
+  [[-1,0.8],[1,1.2],[0,-1],[0.2,0.2]].forEach(([u,v])=>circ(X+u*S,Y-v*S,4*k,'#a23a96','#6a1f63',k));
+  [X,Y,w,d]=pos('candle');circ(X,Y,3*S,'#bfe0ee','#4d7f93',1.2*k,'fill-opacity="0.5"');circ(X,Y,2.25*S,'#f6efdc','#a89a7a',k);
+  ['goldL','goldR'].forEach(n=>{[X,Y,w,d]=pos(n);
+    rect(X-w*S/2,Y-d*S/2,w*S,d*S,'none','#999',0.8*k,0,`stroke-dasharray="${4*k},${3*k}"`);
+    circ(X,Y,1.8*S,'#1c1c1c','#000',k);
+    [[-1.2,1],[1.2,1.2],[0,-1.2],[0,0.2]].forEach(([u,v])=>circ(X+u*S,Y-v*S,0.8*S,GOLD,GOLDD,k));});
+  ['orangeL','orangeR'].forEach(n=>{[X,Y,w,d]=pos(n);circ(X,Y,5*S,DARK,'#1d130e',k);
+    [[-1.5,-0.87],[1.5,-0.87],[0,1.73]].forEach(([u,v])=>circ(X+u*S,Y-v*S,1.5*S,ORNG,ORNGD,k));});
+  [X,Y,w,d]=pos('cup');circ(X,Y,2.125*S,'#d8eef7','#4d7f93',1.2*k);circ(X,Y,1.7*S,'#8fd0ec','#4d7f93',0.8*k);
+  [X,Y,w,d]=pos('bowl');circ(X,Y,3.75*S,BRONZE,'#4a3515',k);circ(X,Y,3.0*S,'#6f522a','#4a3515',k);
+  S=sv;}
+
+function chainOf(Ly){const {Wd}=Ly,B=P.bs,P1=P.p1,E=Ly.E;
+  return [[0,B,fmt(B)+'″'],[B,B+P1,fmt(P1)+'″'],[B+P1,B+P1+E,fmt(E)+'″ items'],[B+P1+E,B+2*P1+E,fmt(P1)+'″'],[B+2*P1+E,Wd,fmt(B)+'″']];}
+function drawChain(chain,tx,y,base){
+  chain.forEach(([x1,x2,lab])=>{if(x2-x1<0.01)return;
+    if((x2-x1)*S>=20)dimH(tx(x1),tx(x2),y,lab,base,base);
+    else{ln(tx(x1),base,tx(x1),y+4,EXT,0.7,'2,2');ln(tx(x2),base,tx(x2),y+4,EXT,0.7,'2,2');
+      ln(tx(x1),y,tx(x2),y,DIM,2);txt(tx((x1+x2)/2),y+13,lab,10.5,'middle','normal',DIM);}});}
+
+const GAP=30; // inches between the two altars when shown alongside
+function geometry(){
+  S=6;
+  const ly=layout(P),showOld=document.getElementById('showOld').checked,overlay=document.getElementById('overlay').checked;
+  const left=64;
+  let oxOld=null,oxNew;
+  if(showOld&&!overlay){oxOld=left;oxNew=left+OLDW*S+GAP*S;}
+  else{const W=Math.max(ly.Wd,showOld?OLDW:0);oxNew=left+(W-ly.Wd)*S/2;oxOld=showOld?left+(W-OLDW)*S/2:null;}
+  return {ly,showOld,oxOld,oxNew,right:oxNew+ly.Wd*S+198};
+}
+
+function frontView(g){
+  o=[];S=6;
+  const {ly}=g,{L,Wd,Dp,E,tw}=ly,B=P.bs,P1=P.p1,Hr=P.t2,Ht=P.t1,AH=P.height;
+  const topIn=Math.max(AH+Hr+57,OLDH+41),gy=topIn*S+34,vbH=gy+78;
+  const ox=g.oxNew,tx=x=>ox+x*S,pw=Wd*S;
+  // ghost: original altar
+  if(g.showOld){
+    a('<g opacity="0.5">');
+    const oo=g.oxOld,otx=x=>oo+x*S;T=gy-OLDH*S;const opw=OLDW*S;
+    rect(oo,T,opw,OLDH*S,WOOD,WOODD,1.5);rect(oo,T,opw,2*S,'#e8c08a',WOODD,1);rect(oo,gy-3*S,opw,3*S,'#c18f52',WOODD,1);
+    const dw=(opw-24)/3;
+    for(let i=0;i<3;i++){const x=oo+6+i*(dw+6);rect(x,T+2*S+3,dw,6.5*S,'#c99552',WOODD,1);rect(x+dw/2-9,T+2*S+3+3.25*S-4,18,8,'#a0813f','#5a4310',1,3);}
+    for(let i=0;i<2;i++){const x=oo+6+i*(opw/2-3);rect(x,T+10*S,opw/2-9,OLDH*S-13*S-6,'#cf9d5c',WOODD,1);}
+    [['orchid',d_orchid],['candle',d_candle],['riser',d_riser_old],['statue',(cx,w)=>d_statue_old(cx,w)],['goldL',d_gold],['goldR',d_gold],['cup',d_cup],['orangeL',d_orange],['orangeR',d_orange],['bowl',d_bowl]]
+      .forEach(([n,f])=>{const [c,cy,w]=OLD[n];f(otx(c),w);});
+    if(!document.getElementById('overlay').checked)txt(oo+opw/2,gy+56,'original altar (50%)',11,'middle','normal','#666');
+    a('</g>');
+  }
+  T=gy-AH*S;
+  rect(ox,T,pw,AH*S,WOOD,WOODD,1.5);rect(ox,T,pw,2*S,'#e8c08a',WOODD,1);
+  if(AH>=6)rect(ox,gy-3*S,pw,3*S,'#c18f52',WOODD,1);
+  ln(ox-20,gy,g.right-70,gy,'#000',2);
+  const rc=L.riser;
+  if(Hr>0){rect(tx(rc[0]-P.rw/2),zp(Hr),P.rw*S,Hr*S,'#b9803f',WOODD,1.5);rect(tx(rc[0]-P.rw/2),zp(Hr),P.rw*S,Math.min(0.7,Hr)*S,'#e8c08a',WOODD,1);}
+  if(P.ww>0&&P.wh>0){rect(tx(L.water[0]-L.water[2]/2),zp(P.wh),L.water[2]*S,P.wh*S,'#cfae78',WOODD,1.5);rect(tx(L.water[0]-L.water[2]/2),zp(P.wh),L.water[2]*S,Math.min(0.6,P.wh)*S,'#e6cfa0',WOODD,1);}
+  if(Ht>0){rect(tx(B),zp(Ht),tw*S,Ht*S,'#d9b27a',WOODD,1.5);rect(tx(B),zp(Ht),tw*S,Math.min(0.6,Ht)*S,'#ecd3a5',WOODD,1);}
+  const T0=T;
+  [['orchid',d_orchid],['candle',d_candle],['statue',null],['goldL',d_gold],['goldR',d_gold],['cup',d_cup],['orangeL',d_orange],['orangeR',d_orange],['bowl',d_bowl]].forEach(([n,f])=>{
+    if(n==='statue'){T=T0;d_statue_new(tx(L.statue[0]),Hr);}
+    else{T=T0-(n==='cup'?(P.ww>0&&P.wh>0?P.wh:Ht):Ht)*S;f(tx(L[n][0]),L[n][2]);T=T0;}});
+  T=T0;
+  const yb=gy+20;
+  drawChain(chainOf(ly),tx,yb,gy);
+  dimH(tx(0),tx(Wd),yb+34,fmt(Wd)+'″  altar width',gy,gy);
+  dimV(ox-40,gy,T,fmt(AH)+'″ platform height',ox-4,ox-4);ln(ox-4,T,ox-44,T,EXT,0.7,'2,2');
+  const rx0=ox+pw,dvR=(i,lo,hi,lab,ex)=>{if(hi-lo<0.01)return;const x=rx0+22+24*i;dimV(x,zp(lo),zp(hi),lab,x+4,ex,'right');};
+  dvR(0,0,Ht,fmt(Ht)+'″ tier 1',tx(B+tw)+2);
+  if(P.ww>0)dvR(1,0,P.wh,fmt(P.wh)+'″ water tier',tx(L.water[0]+L.water[2]/2)+2);
+  dvR(2,0,Hr,fmt(Hr)+'″ tier 2 (riser)',tx(rc[0]+P.rw/2)+2);
+  dvR(3,Hr,Hr+57,'57″ statue',tx(rc[0])+14);
+  dvR(4,0,Hr+57,fmt(Hr+57)+'″ above platform',tx(rc[0])+14);
+  const x4=rx0+22+24*5;dimV(x4,gy,zp(Hr+57),fmt(AH+Hr+57)+'″ above floor',x4+4,tx(rc[0])+14,'right');
+  ln(rx0,T,rx0+22+24*4+4,T,EXT,0.7,'2,2');ln(rx0,gy,x4+4,gy,EXT,0.7,'2,2');
+  return {html:o.join(''),w:g.right,h:vbH};
+}
+
+function topView(g){
+  o=[];S=6;
+  const {ly}=g,{L,Wd,Dp,tw}=ly,B=P.bs,Bf=P.bf,P1=P.p1;
+  const topY=46,tx=x=>g.oxNew+x*S,ty=y=>topY+(Dp-y)*S;
+  if(g.showOld){
+    a('<g opacity="0.5">');
+    const oo=g.oxOld,otx=x=>oo+x*S,oty=y=>topY+(OLDD-y)*S;
+    rect(oo,topY,OLDW*S,OLDD*S,'#e3c28f',WOODD,1.5);
+    rect(otx(2),oty(15),51.5*S,13*S,'#efe3cf','#b39a6e',1,0,'stroke-dasharray="5,3"');
+    topItems(OLD,otx,oty,true,S,1);
+    if(!document.getElementById('overlay').checked)txt(oo+OLDW*S/2,oty(0)+56,'original altar (50%)',11,'middle','normal','#666');
+    a('</g>');
+  }
+  const xr=tx(Wd);
+  rect(tx(0),topY,Wd*S,Dp*S,'#e3c28f',WOODD,1.5);
+  ln(Math.min(tx(0),g.oxOld??1e9)-10,topY-4,xr,topY-4,'#6b8ca8',3);txt(xr-3,topY-8,'wall',9.5,'end','normal','#6b8ca8');
+  rect(tx(B),ty(Dp),tw*S,(Dp-Bf)*S,'#efd9ae','#8a5a2b',1.4);
+  topItems(L,tx,ty,false,S,1);
+  const yb=ty(0)+20;
+  drawChain(chainOf(ly),tx,yb,ty(0));
+  dimH(tx(0),tx(Wd),yb+34,fmt(Wd)+'″  altar width',ty(0),ty(0));
+  const dch=[[0,Bf,fmt(Bf)+'″ border']];if(P1>0)dch.push([Bf,Bf+P1,fmt(P1)+'″']);dch.push([Bf+P1,Dp,fmt(Dp-Bf-P1)+'″ items zone']);
+  dch.forEach(([y1,y2,lab])=>{if(y2-y1>0.01)dimV(xr+22,ty(y1),ty(y2),lab,xr,xr,'right');});
+  dimV(xr+48,topY,ty(0),fmt(Dp)+'″  altar depth',xr,xr,'right');
+  return {html:o.join(''),w:g.right,h:ty(0)+34+36};
+}
+
+function zendoView(g){
+  o=[];S=1;
+  const {ly}=g,{L,Wd,Dp,tw}=ly,B=P.bs,Bf=P.bf,W=P.wall;
+  a(ZENDO);
+  const ax0=125.5-Wd/2,back=600-W,top=back-Dp;
+  const ty=y=>top+y; // wall at the bottom; front of the altar faces up into the room
+  rect(ax0,top,Wd,Dp,'#e3c28f','#8a5a2b',0.8);
+  rect(ax0+B,top+Bf,tw,Dp-Bf,'#efd9ae','#8a5a2b',0.6);
+  topItems(L,x=>ax0+Wd-x,ty,false,1,0.5); // plan is rotated 180° vs the top view, so X mirrors
+  // bells (12″ and 8″ dia, sizes assumed) in front of the left zabuton; mokugyo (8″ dia, assumed) in front of the right one.
+  // 'In front' = on the altar side of each cushion (cushions at y 467–497, x 46–74 left / 178–206 right)
+  circ(53,506,6,BRONZE,'#4a3515',0.6);circ(53,506,4.2,'#b8924f','#4a3515',0.4);
+  circ(67,505,4,BRONZE,'#4a3515',0.6);circ(67,505,2.7,'#b8924f','#4a3515',0.4);
+  circ(192,505,4,'#a8602a','#4a2410',0.6);circ(192,505,2.6,'#c27a3c','#4a2410',0.4);
+  if(g.showOld){rect(125.5-OLDW/2,back-OLDD,OLDW,OLDD,'none','#c0392b',1,0,'stroke-dasharray="4 3"');}
+  if(W>0){ln(ax0+Wd+6,back,ax0+Wd+6,600,'#d6336c',0.6);ln(ax0+Wd+3,back,ax0+Wd+9,back,'#d6336c',0.6);ln(ax0+Wd+3,600,ax0+Wd+9,600,'#d6336c',0.6);
+    txt(ax0+Wd+12,back+W/2+2,fmt(W)+'″ to wall',6,'start','normal','#d6336c');}
+  const gap=top-445;
+  ln(168,445,168,top,'#d6336c',0.6,'3 2');
+  txt(171,(445+top)/2,Math.round(gap)+'″ to haishiki',6,'start','normal','#d6336c');
+  // scale bar
+  rect(0,616,60,5,'#222','#222',0.5);rect(60,616,60,5,'#fff','#222',0.5);
+  txt(0,630,'0',6,'middle');txt(60,630,'5 ft',6,'middle');txt(120,630,'10 ft',6,'middle');
+  S=6;
+  return {html:o.join(''),w:311,h:668};
+}
+
+function setSvg(id,r,vb){const el=document.getElementById(id);el.setAttribute('viewBox',vb||`0 0 ${f1(r.w)} ${f1(r.h)}`);el.setAttribute('font-family','Helvetica, Arial, sans-serif');el.innerHTML=r.html;}
+function render(){
+  const g=geometry();
+  setSvg('front',frontView(g));
+  setSvg('top',topView(g));
+  const z=zendoView(g);setSvg('zendo',z,'-30 -24 311 668');
+  const {Wd,Dp}=g.ly;
+  const stats=[['Altar footprint',`${fmt(Wd)}″ W × ${fmt(Dp)}″ D`],['Altar height',`${fmt(P.height)}″`],
+    ['Statue top above floor',`${fmt(P.height+P.t2+57)}″`],['Items zone',`${fmt(g.ly.E)}″ × ${fmt(g.ly.ED)}″`],['Water tier',`${fmt(P.ww)}″ wide on 3 sides × ${fmt(P.wh)}″ high`],['Statue riser',`${fmt(P.rw)}″ × ${fmt(P.rd)}″ × ${fmt(P.t2)}″`],
+    ['Altar back to wall',`${fmt(P.wall)}″`],['Front of altar to haishiki',`${Math.round((600-P.wall-Dp)-445)}″`],['Original altar',`55.5″ × 30.5″ × 36.5″, statue top 77.5″`]];
+  const html=stats.map(([k,v])=>`<li>${k}: <b>${v}</b></li>`).join('');
+  document.getElementById('stats').innerHTML=html;
+  document.getElementById('psum').innerHTML=`<b>Settings:</b> padding tier 1 ${fmt(P.p1)}″ · tier 2 (riser) ${fmt(P.rw)}″ W × ${fmt(P.rd)}″ D · border ${fmt(P.bf)}″ front / ${fmt(P.bs)}″ sides · overall height ${fmt(P.height)}″ · distance from wall ${fmt(P.wall)}″ · tier 1 height ${fmt(P.t1)}″ · water tier ${fmt(P.ww)}″ wide × ${fmt(P.wh)}″ high · tier 2 height ${fmt(P.t2)}″ &nbsp;|&nbsp; Altar ${fmt(Wd)}″ × ${fmt(Dp)}″, statue top ${fmt(P.height+P.t2+57)}″ above floor`;
+}
+function buildControls(){
+  const box=document.getElementById('ctls');box.innerHTML='';
+  CTL.forEach(([id,label,hint,min,max,step])=>{
+    const d=document.createElement('div');d.className='ctl';
+    d.innerHTML=`<label>${label}<span>″</span></label><small>${hint}</small><div class="row"><input type="range" id="r_${id}" min="${min}" max="${max}" step="${step}"><input type="number" id="n_${id}" min="${min}" max="${max}" step="${step}"></div>`;
+    box.appendChild(d);
+    const r=d.querySelector('input[type=range]'),n=d.querySelector('input[type=number]');
+    const set=v=>{v=Math.min(max,Math.max(min,+v||0));P[id]=v;r.value=v;n.value=v;render();};
+    r.addEventListener('input',()=>set(r.value));n.addEventListener('input',()=>{if(n.value!=='')set(n.value);});
+    r.value=n.value=P[id];
+  });
+}
+document.getElementById('reset').onclick=()=>{P=Object.assign({},DEF);buildControls();render();};
+document.getElementById('print').onclick=()=>window.print();
+['showOld','overlay'].forEach(i=>document.getElementById(i).addEventListener('change',render));
+buildControls();render();
+</script></body></html>
