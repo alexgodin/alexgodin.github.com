@@ -53,12 +53,15 @@ svg{width:100%;height:auto;display:block}
     <label><input type="checkbox" id="showOld" checked> Show original altar (50% opacity)</label>
     <label><input type="checkbox" id="overlay"> Overlay it on the new altar (instead of alongside)</label>
    </div></div>
+  <div class="panel noprint" style="margin-top:16px"><h2>Room calibration</h2><div id="rctls"></div></div>
   <div class="panel" style="margin-top:16px"><h2>Result</h2><ul class="stats" id="stats"></ul></div>
  </aside>
  <section class="views">
   <div class="printsum panel" id="psum"></div>
   <div class="panel"><h2>Front view</h2><svg id="front"></svg></div>
   <div class="panel"><h2>Top view</h2><svg id="top"></svg></div>
+  <div class="panel noprint"><h2>Front wall, in the room</h2><svg id="room"></svg>
+   <div class="legend">Windows and radiator (grey) are approximate, defaults measured from the AV layout drawing, radiator estimated; adjust in Room calibration: 4 windows centered on the wall. Altar centered on the wall.</div></div>
   <div class="legend noprint">
    <span class="sw" style="background:#e3c28f"></span>platform / border
    <span class="sw" style="background:#efd9ae"></span>offering tier (tier 1)
@@ -156,7 +159,7 @@ const ZENDO = `<path d="M60 0V600" stroke="#c9ced6" stroke-width="0.4"/><path d=
   <path d="M28 90H46" stroke="#d6336c" stroke-width="0.6"/>
 
   `;
-const DEF = {p1:2,rw:40,rd:21,bs:11,bf:7,height:33.5,t1:3,t2:6,wall:18,ww:6,wh:3};
+const DEF = {p1:2,rw:40,rd:21,bs:11,bf:7,height:33.5,t1:3,t2:6,wall:18,ww:6,wh:3,ceil:132,winw:48,wing:14.2,winh:90,sill:21};
 const CTL = [
  ['p1','Padding, tier 1','Space around the items on the offering tier (sides + front)',0,4,0.25],
  ['rw','Tier 2 width (X)','Statue riser width, left to right',16,64,0.5],
@@ -169,6 +172,13 @@ const CTL = [
  ['ww','Water tier width','Water-bowl tier around the riser on 3 sides (left, right, front): how far it extends',0,12,0.25],
  ['wh','Water tier height','Water-bowl tier, above the platform (between tier 1 and tier 2)',0,16,0.25],
  ['t2','Tier 2 height','Statue riser, above the platform',0,27,0.25],
+];
+const RCTL = [
+ ['ceil','Ceiling height','Floor to ceiling, front wall (room view only)',96,160,0.5],
+ ['winw','Window width','Each of the 4 windows',30,70,0.5],
+ ['wing','Window gap','Space between adjacent windows',0,30,0.25],
+ ['winh','Window height','Glass + frame, top to bottom',40,120,0.5],
+ ['sill','Sill height','Floor to bottom of the windows',0,60,0.5],
 ];
 let P = Object.assign({},DEF);
 
@@ -294,11 +304,26 @@ function geometry(){
   return {ly,showOld,oxOld,oxNew,right:oxNew+ly.Wd*S+198};
 }
 
-function frontView(g){
+// front wall (estimated from photos): 4 equal windows centered on the room, radiator below
+const ROOMW=251,RAD={w:90,h:19};
+function roomBg(x0,gy){
+  const W=ROOMW*S,cx=x0+W/2,wy=gy-(P.sill+P.winh)*S;
+  rect(x0,gy-P.ceil*S,W,P.ceil*S,'#efefee','#bbb',1);
+  const span=4*P.winw+3*P.wing;
+  for(let i=0;i<4;i++){const wx=cx-span*S/2+i*(P.winw+P.wing)*S;
+    rect(wx,wy,P.winw*S,P.winh*S,'#d6d9db','#8c8c8c',4);
+    ln(wx,wy+P.winh*S/2,wx+P.winw*S,wy+P.winh*S/2,'#8c8c8c',3);
+    rect(wx-4,gy-P.sill*S,P.winw*S+8,3,'#bbb','#bbb',0);}
+  const rx=cx-RAD.w*S/2;rect(rx,gy-RAD.h*S,RAD.w*S,RAD.h*S,'#cfcfcf','#8c8c8c',1.5);
+  for(let x=rx+10;x<rx+RAD.w*S-5;x+=10)ln(x,gy-RAD.h*S+4,x,gy-4,'#aaa',2);
+  rect(x0,gy,W,20,'#f6f6f5','none',0);}
+
+function frontView(g,room){
   o=[];S=6;
   const {ly}=g,{L,Wd,Dp,E,tw}=ly,B=P.bs,P1=P.p1,Hr=P.t2,Ht=P.t1,AH=P.height;
-  const topIn=Math.max(AH+Hr+57,OLDH+41),gy=topIn*S+34,vbH=gy+78;
+  const topIn=room?Math.max(P.ceil,AH+Hr+57):Math.max(AH+Hr+57,OLDH+41),gy=topIn*S+(room?10:34),vbH=gy+(room?20:78);
   const ox=g.oxNew,tx=x=>ox+x*S,pw=Wd*S;
+  if(room)roomBg(g.x0,gy);
   // ghost: original altar
   if(g.showOld){
     a('<g opacity="0.5">');
@@ -309,13 +334,13 @@ function frontView(g){
     for(let i=0;i<2;i++){const x=oo+6+i*(opw/2-3);rect(x,T+10*S,opw/2-9,OLDH*S-13*S-6,'#cf9d5c',WOODD,1);}
     [['orchid',d_orchid],['candle',d_candle],['riser',d_riser_old],['statue',(cx,w)=>d_statue_old(cx,w)],['goldL',d_gold],['goldR',d_gold],['cup',d_cup],['orangeL',d_orange],['orangeR',d_orange],['bowl',d_bowl]]
       .forEach(([n,f])=>{const [c,cy,w]=OLD[n];f(otx(c),w);});
-    if(!document.getElementById('overlay').checked)txt(oo+opw/2,gy+56,'original altar (50%)',11,'middle','normal','#666');
+    if(!room&&!document.getElementById('overlay').checked)txt(oo+opw/2,gy+56,'original altar (50%)',11,'middle','normal','#666');
     a('</g>');
   }
   T=gy-AH*S;
   rect(ox,T,pw,AH*S,WOOD,WOODD,1.5);rect(ox,T,pw,2*S,'#e8c08a',WOODD,1);
   if(AH>=6)rect(ox,gy-3*S,pw,3*S,'#c18f52',WOODD,1);
-  ln(ox-20,gy,g.right-70,gy,'#000',2);
+  ln(room?g.x0:ox-20,gy,room?g.x0+ROOMW*S:g.right-70,gy,'#000',2);
   const rc=L.riser;
   if(Hr>0){rect(tx(rc[0]-P.rw/2),zp(Hr),P.rw*S,Hr*S,'#b9803f',WOODD,1.5);rect(tx(rc[0]-P.rw/2),zp(Hr),P.rw*S,Math.min(0.7,Hr)*S,'#e8c08a',WOODD,1);}
   if(P.ww>0&&P.wh>0){rect(tx(L.water[0]-L.water[2]/2),zp(P.wh),L.water[2]*S,P.wh*S,'#cfae78',WOODD,1.5);rect(tx(L.water[0]-L.water[2]/2),zp(P.wh),L.water[2]*S,Math.min(0.6,P.wh)*S,'#e6cfa0',WOODD,1);}
@@ -325,6 +350,7 @@ function frontView(g){
     if(n==='statue'){T=T0;d_statue_new(tx(L.statue[0]),Hr);}
     else{T=T0-(n==='cup'?(P.ww>0&&P.wh>0?P.wh:Ht):Ht)*S;f(tx(L[n][0]),L[n][2]);T=T0;}});
   T=T0;
+  if(room)return {html:o.join(''),w:g.x0*2+ROOMW*S,h:vbH};
   const yb=gy+20;
   drawChain(chainOf(ly),tx,yb,gy);
   dimH(tx(0),tx(Wd),yb+34,fmt(Wd)+'″  altar width',gy,gy);
@@ -338,6 +364,11 @@ function frontView(g){
   const x4=rx0+22+24*5;dimV(x4,gy,zp(Hr+57),fmt(AH+Hr+57)+'″ above floor',x4+4,tx(rc[0])+14,'right');
   ln(rx0,T,rx0+22+24*4+4,T,EXT,0.7,'2,2');ln(rx0,gy,x4+4,gy,EXT,0.7,'2,2');
   return {html:o.join(''),w:g.right,h:vbH};
+}
+
+function roomView(g){
+  const x0=20;
+  return frontView(Object.assign({},g,{showOld:false,x0,oxNew:x0+(ROOMW-g.ly.Wd)*3,oxOld:x0+(ROOMW-OLDW)*3}),true);
 }
 
 function topView(g){
@@ -399,6 +430,7 @@ function render(){
   const g=geometry();
   setSvg('front',frontView(g));
   setSvg('top',topView(g));
+  setSvg('room',roomView(g));
   const z=zendoView(g);setSvg('zendo',z,'-30 -24 311 668');
   const {Wd,Dp}=g.ly;
   const stats=[['Altar footprint',`${fmt(Wd)}″ W × ${fmt(Dp)}″ D`],['Altar height',`${fmt(P.height)}″`],
@@ -409,8 +441,10 @@ function render(){
   document.getElementById('psum').innerHTML=`<b>Settings:</b> padding tier 1 ${fmt(P.p1)}″ · tier 2 (riser) ${fmt(P.rw)}″ W × ${fmt(P.rd)}″ D · border ${fmt(P.bf)}″ front / ${fmt(P.bs)}″ sides · overall height ${fmt(P.height)}″ · distance from wall ${fmt(P.wall)}″ · tier 1 height ${fmt(P.t1)}″ · water tier ${fmt(P.ww)}″ wide × ${fmt(P.wh)}″ high · tier 2 height ${fmt(P.t2)}″ &nbsp;|&nbsp; Altar ${fmt(Wd)}″ × ${fmt(Dp)}″, statue top ${fmt(P.height+P.t2+57)}″ above floor`;
 }
 function buildControls(){
-  const box=document.getElementById('ctls');box.innerHTML='';
-  CTL.forEach(([id,label,hint,min,max,step])=>{
+  buildList('ctls',CTL);buildList('rctls',RCTL);}
+function buildList(boxId,list){
+  const box=document.getElementById(boxId);box.innerHTML='';
+  list.forEach(([id,label,hint,min,max,step])=>{
     const d=document.createElement('div');d.className='ctl';
     d.innerHTML=`<label>${label}<span>″</span></label><small>${hint}</small><div class="row"><input type="range" id="r_${id}" min="${min}" max="${max}" step="${step}"><input type="number" id="n_${id}" min="${min}" max="${max}" step="${step}"></div>`;
     box.appendChild(d);
