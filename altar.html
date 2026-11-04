@@ -284,7 +284,7 @@ function topItems(L,tx,ty,old,s,k){const sv=S;S=s;
   S=sv;}
 
 function chainOf(Ly){const {Wd}=Ly,B=P.bs,P1=P.p1,E=Ly.E;
-  return [[0,B,fmt(B)+'″'],[B,B+P1,fmt(P1)+'″'],[B+P1,B+P1+E,fmt(E)+'″ items'],[B+P1+E,B+2*P1+E,fmt(P1)+'″'],[B+2*P1+E,Wd,fmt(B)+'″']];}
+  return [[0,B,fmt(B)+'″'],[B,B+P1,fmt(P1)+'″'],[B+P1,B+P1+E,fmt(E)+'″'],[B+P1+E,B+2*P1+E,fmt(P1)+'″'],[B+2*P1+E,Wd,fmt(B)+'″']];}
 function drawChain(chain,tx,y,base){
   chain.forEach(([x1,x2,lab])=>{if(x2-x1<0.01)return;
     if((x2-x1)*S>=20)dimH(tx(x1),tx(x2),y,lab,base,base);
@@ -388,7 +388,7 @@ function topView(g){
   const yb=ty(0)+20;
   drawChain(chainOf(ly),tx,yb,ty(0));
   dimH(tx(0),tx(Wd),yb+46,fmt(Wd)+'″  altar width',ty(0),ty(0));
-  const dch=[[0,Bf,fmt(Bf)+'″ border']];if(P1>0)dch.push([Bf,Bf+P1,fmt(P1)+'″']);dch.push([Bf+P1,Dp,fmt(Dp-Bf-P1)+'″ items zone']);
+  const dch=[[0,Bf,fmt(Bf)+'″ border']];if(P1>0)dch.push([Bf,Bf+P1,fmt(P1)+'″']);dch.push([Bf+P1,Dp,fmt(Dp-Bf-P1)+'″']);
   dch.forEach(([y1,y2,lab])=>{if(y2-y1>0.01)dimV(xr+26,ty(y1),ty(y2),lab,xr,xr,'right');});
   dimV(xr+62,topY,ty(0),fmt(Dp)+'″  altar depth',xr,xr,'right');
   // full footprints of the upper tiers: riser and water tier
@@ -435,7 +435,7 @@ function render(){
   const z=zendoView(g);setSvg('zendo',z,'-30 -24 311 668');
   const {Wd,Dp}=g.ly;
   const stats=[['Altar footprint',`${fmt(Wd)}″ W × ${fmt(Dp)}″ D`],['Altar height',`${fmt(P.height)}″`],
-    ['Statue top above floor',`${fmt(P.height+P.t2+57)}″`],['Items zone',`${fmt(g.ly.E)}″ × ${fmt(g.ly.ED)}″`],['Water tier',`${fmt(P.ww)}″ wide on 3 sides × ${fmt(P.wh)}″ high`],['Statue riser',`${fmt(P.rw)}″ × ${fmt(P.rd)}″ × ${fmt(P.t2)}″`],
+    ['Statue top above floor',`${fmt(P.height+P.t2+57)}″`],['Water tier',`${fmt(P.ww)}″ wide on 3 sides × ${fmt(P.wh)}″ high`],['Statue riser',`${fmt(P.rw)}″ × ${fmt(P.rd)}″ × ${fmt(P.t2)}″`],
     ['Altar back to wall',`${fmt(P.wall)}″`],['Front of altar to haishiki',`${Math.round((600-P.wall-Dp)-445)}″`],['Original altar',`55.5″ × 30.5″ × 36.5″, statue top 77.5″`]];
   const html=stats.map(([k,v])=>`<li>${k}: <b>${v}</b></li>`).join('');
   document.getElementById('stats').innerHTML=html;
