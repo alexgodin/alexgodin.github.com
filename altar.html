@@ -386,7 +386,7 @@ function topView(g){
   ln(Math.min(tx(0),g.oxOld??1e9)-10,topY-4,xr,topY-4,'#6b8ca8',3);txt(xr-3,topY-8,'wall',9.5,'end','normal','#6b8ca8');
   topItems(L,tx,ty,false,S,1);
   const yb=ty(0)+20;
-  drawChain(chainOf(ly),tx,yb,ty(0));
+  drawChain(chainOf(ly).slice(2,3),tx,yb,ty(0));
   dimH(tx(0),tx(Wd),yb+46,fmt(Wd)+'″  altar width',ty(0),ty(0));
   const dch=[[0,Bf,fmt(Bf)+'″ border']];if(P1>0)dch.push([Bf,Bf+P1,fmt(P1)+'″']);dch.push([Bf+P1,Dp,fmt(Dp-Bf-P1)+'″']);
   dch.forEach(([y1,y2,lab])=>{if(y2-y1>0.01)dimV(xr+26,ty(y1),ty(y2),lab,xr,xr,'right');});
