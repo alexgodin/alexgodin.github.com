@@ -60,7 +60,7 @@ svg{width:100%;height:auto;display:block}
   <div class="printsum panel" id="psum"></div>
   <div class="panel"><h2>Front view</h2><svg id="front"></svg></div>
   <div class="panel"><h2>Top view</h2><svg id="top"></svg></div>
-  <div class="panel noprint"><h2>Front wall, in the room</h2><svg id="room"></svg>
+  <div class="panel"><h2>Front wall, in the room</h2><svg id="room"></svg>
    <div class="legend">Windows and radiator (grey) are approximate, defaults measured from the AV layout drawing, radiator estimated; adjust in Room calibration: 4 windows centered on the wall. Altar centered on the wall.</div></div>
   <div class="legend noprint">
    <span class="sw" style="background:#e3c28f"></span>platform / border
@@ -196,15 +196,15 @@ function circ(x,y,r,fill='none',stroke='#333',sw=1,extra=''){a(`<circle cx="${f1
 function poly(pts,fill,stroke='#333',sw=1){a(`<polygon points="${pts.map(p=>f1(p[0])+','+f1(p[1])).join(' ')}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round"/>`);}
 const DIM='#1a5fb4', EXT='#8aa4c8';
 function arrowhead(x,y,ux,uy){const px=-uy,py=ux;
-  poly([[x,y],[x+ux*7+px*2.8,y+uy*7+py*2.8],[x+ux*7-px*2.8,y+uy*7-py*2.8]],DIM,DIM,0);}
+  poly([[x,y],[x+ux*10+px*4,y+uy*10+py*4],[x+ux*10-px*4,y+uy*10-py*4]],DIM,DIM,0);}
 function dimH(x1,x2,y,label,e1,e2){
   [[x1,e1],[x2,e2]].forEach(([xx,ey])=>{if(ey!=null)ln(xx,ey,xx,y+(y>ey?4:-4),EXT,0.7,'2,2');});
-  ln(x1,y,x2,y,DIM,1);arrowhead(x1,y,1,0);arrowhead(x2,y,-1,0);
-  txt((x1+x2)/2,y-4,label,12,'middle','normal',DIM);}
+  ln(x1,y,x2,y,DIM,1.6);arrowhead(x1,y,1,0);arrowhead(x2,y,-1,0);
+  txt((x1+x2)/2,y-6,label,17,'middle','600',DIM);}
 function dimV(x,y1,y2,label,ex1,ex2,side='left'){
   [[y1,ex1],[y2,ex2]].forEach(([yy,ex])=>{if(ex!=null)ln(ex,yy,x+(x>ex?4:-4),yy,EXT,0.7,'2,2');});
-  ln(x,y1,x,y2,DIM,1);const sg=y2>y1?1:-1;arrowhead(x,y1,0,sg);arrowhead(x,y2,0,-sg);
-  txt(side==='left'?x-4:x+12,(y1+y2)/2,label,12,'middle','normal',DIM,-90);}
+  ln(x,y1,x,y2,DIM,1.6);const sg=y2>y1?1:-1;arrowhead(x,y1,0,sg);arrowhead(x,y2,0,-sg);
+  txt(side==='left'?x-6:x+17,(y1+y2)/2,label,17,'middle','600',DIM,-90);}
 
 const WOOD='#d9a766',WOODD='#7a4d22',DARK='#3b2a22',GOLD='#e3b93c',GOLDD='#8a6a10',ORNG='#f28c28',ORNGD='#a8530b',BRONZE='#9a7640',STAT='#6e4d3a';
 
@@ -289,7 +289,7 @@ function drawChain(chain,tx,y,base){
   chain.forEach(([x1,x2,lab])=>{if(x2-x1<0.01)return;
     if((x2-x1)*S>=20)dimH(tx(x1),tx(x2),y,lab,base,base);
     else{ln(tx(x1),base,tx(x1),y+4,EXT,0.7,'2,2');ln(tx(x2),base,tx(x2),y+4,EXT,0.7,'2,2');
-      ln(tx(x1),y,tx(x2),y,DIM,2);txt(tx((x1+x2)/2),y+13,lab,10.5,'middle','normal',DIM);}});}
+      ln(tx(x1),y,tx(x2),y,DIM,2.4);txt(tx((x1+x2)/2),y+17,lab,15,'middle','600',DIM);}});}
 
 const GAP=30; // inches between the two altars when shown alongside
 function geometry(){
@@ -299,7 +299,7 @@ function geometry(){
   let oxOld=null,oxNew;
   if(showOld&&!overlay){oxOld=left;oxNew=left+OLDW*S+GAP*S;}
   else{const W=Math.max(ly.Wd,showOld?OLDW:0);oxNew=left+(W-ly.Wd)*S/2;oxOld=showOld?left+(W-OLDW)*S/2:null;}
-  return {ly,showOld,oxOld,oxNew,right:oxNew+ly.Wd*S+198};
+  return {ly,showOld,oxOld,oxNew,right:oxNew+ly.Wd*S+230};
 }
 
 // front wall (estimated from photos): 4 equal windows centered on the room, radiator below
@@ -320,7 +320,7 @@ function roomBg(x0,gy){
 function frontView(g,room){
   o=[];S=6;
   const {ly}=g,{L,Wd,Dp,E,tw}=ly,B=P.bs,P1=P.p1,Hr=P.t2,AH=P.height;
-  const topIn=room?Math.max(P.ceil,AH+Hr+57):Math.max(AH+Hr+57,OLDH+41),gy=topIn*S+(room?10:34),vbH=gy+(room?20:78);
+  const topIn=room?Math.max(P.ceil,AH+Hr+57):Math.max(AH+Hr+57,OLDH+41),gy=topIn*S+(room?10:34),vbH=gy+(room?20:104);
   const ox=g.oxNew,tx=x=>ox+x*S,pw=Wd*S;
   if(room)roomBg(g.x0,gy);
   // ghost: original altar
@@ -351,15 +351,15 @@ function frontView(g,room){
   if(room)return {html:o.join(''),w:g.x0*2+ROOMW*S,h:vbH};
   const yb=gy+20;
   drawChain(chainOf(ly),tx,yb,gy);
-  dimH(tx(0),tx(Wd),yb+34,fmt(Wd)+'″  altar width',gy,gy);
+  dimH(tx(0),tx(Wd),yb+46,fmt(Wd)+'″  altar width',gy,gy);
   dimV(ox-40,gy,T,fmt(AH)+'″ platform height',ox-4,ox-4);ln(ox-4,T,ox-44,T,EXT,0.7,'2,2');
-  const rx0=ox+pw,dvR=(i,lo,hi,lab,ex)=>{if(hi-lo<0.01)return;const x=rx0+22+24*i;dimV(x,zp(lo),zp(hi),lab,x+4,ex,'right');};
+  const rx0=ox+pw,dvR=(i,lo,hi,lab,ex)=>{if(hi-lo<0.01)return;const x=rx0+26+36*i;dimV(x,zp(lo),zp(hi),lab,x+4,ex,'right');};
   if(P.ww>0)dvR(0,0,P.wh,fmt(P.wh)+'″ water tier',tx(L.water[0]+L.water[2]/2)+2);
   dvR(1,0,Hr,fmt(Hr)+'″ riser',tx(rc[0]+P.rw/2)+2);
   dvR(2,Hr,Hr+57,'57″ statue',tx(rc[0])+14);
   dvR(3,0,Hr+57,fmt(Hr+57)+'″ above platform',tx(rc[0])+14);
-  const x4=rx0+22+24*4;dimV(x4,gy,zp(Hr+57),fmt(AH+Hr+57)+'″ above floor',x4+4,tx(rc[0])+14,'right');
-  ln(rx0,T,rx0+22+24*3+4,T,EXT,0.7,'2,2');ln(rx0,gy,x4+4,gy,EXT,0.7,'2,2');
+  const x4=rx0+26+36*4;dimV(x4,gy,zp(Hr+57),fmt(AH+Hr+57)+'″ above floor',x4+4,tx(rc[0])+14,'right');
+  ln(rx0,T,rx0+26+36*3+4,T,EXT,0.7,'2,2');ln(rx0,gy,x4+4,gy,EXT,0.7,'2,2');
   return {html:o.join(''),w:g.right,h:vbH};
 }
 
@@ -387,17 +387,17 @@ function topView(g){
   topItems(L,tx,ty,false,S,1);
   const yb=ty(0)+20;
   drawChain(chainOf(ly),tx,yb,ty(0));
-  dimH(tx(0),tx(Wd),yb+34,fmt(Wd)+'″  altar width',ty(0),ty(0));
+  dimH(tx(0),tx(Wd),yb+46,fmt(Wd)+'″  altar width',ty(0),ty(0));
   const dch=[[0,Bf,fmt(Bf)+'″ border']];if(P1>0)dch.push([Bf,Bf+P1,fmt(P1)+'″']);dch.push([Bf+P1,Dp,fmt(Dp-Bf-P1)+'″ items zone']);
-  dch.forEach(([y1,y2,lab])=>{if(y2-y1>0.01)dimV(xr+22,ty(y1),ty(y2),lab,xr,xr,'right');});
-  dimV(xr+48,topY,ty(0),fmt(Dp)+'″  altar depth',xr,xr,'right');
+  dch.forEach(([y1,y2,lab])=>{if(y2-y1>0.01)dimV(xr+26,ty(y1),ty(y2),lab,xr,xr,'right');});
+  dimV(xr+62,topY,ty(0),fmt(Dp)+'″  altar depth',xr,xr,'right');
   // full footprints of the upper tiers: riser and water tier
   const rc=L.riser,wc=L.water;
-  dimV(xr+74,ty(rc[1]-rc[3]/2),ty(rc[1]+rc[3]/2),fmt(P.rd)+'″ riser depth',tx(rc[0]+rc[2]/2),xr,'right');
-  if(P.ww>0)dimV(xr+100,ty(wc[1]-wc[3]/2),ty(wc[1]+wc[3]/2),fmt(wc[3])+'″ water tier depth',tx(wc[0]+wc[2]/2),xr,'right');
-  dimH(tx(rc[0]-rc[2]/2),tx(rc[0]+rc[2]/2),yb+68,fmt(P.rw)+'″ riser width',null,null);
-  if(P.ww>0)dimH(tx(wc[0]-wc[2]/2),tx(wc[0]+wc[2]/2),yb+102,fmt(wc[2])+'″ water tier width',null,null);
-  return {html:o.join(''),w:g.right,h:ty(0)+34+36+(P.ww>0?68:34)};
+  dimV(xr+98,ty(rc[1]-rc[3]/2),ty(rc[1]+rc[3]/2),fmt(P.rd)+'″ riser depth',tx(rc[0]+rc[2]/2),xr,'right');
+  if(P.ww>0)dimV(xr+134,ty(wc[1]-wc[3]/2),ty(wc[1]+wc[3]/2),fmt(wc[3])+'″ water tier depth',tx(wc[0]+wc[2]/2),xr,'right');
+  dimH(tx(rc[0]-rc[2]/2),tx(rc[0]+rc[2]/2),yb+92,fmt(P.rw)+'″ riser width',null,null);
+  if(P.ww>0)dimH(tx(wc[0]-wc[2]/2),tx(wc[0]+wc[2]/2),yb+138,fmt(wc[2])+'″ water tier width',null,null);
+  return {html:o.join(''),w:g.right,h:ty(0)+46+44+(P.ww>0?92:46)};
 }
 
 function zendoView(g){
