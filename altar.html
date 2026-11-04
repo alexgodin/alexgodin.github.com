@@ -350,7 +350,7 @@ function frontView(g,room){
   T=T0;
   if(room)return {html:o.join(''),w:g.x0*2+ROOMW*S,h:vbH};
   const yb=gy+20;
-  drawChain(chainOf(ly),tx,yb,gy);
+  drawChain(chainOf(ly).slice(2,3),tx,yb,gy); // just the centre span; side borders and padding aren't labelled here
   dimH(tx(0),tx(Wd),yb+46,fmt(Wd)+'″  altar width',gy,gy);
   dimV(ox-40,gy,T,fmt(AH)+'″ platform height',ox-4,ox-4);ln(ox-4,T,ox-44,T,EXT,0.7,'2,2');
   const rx0=ox+pw,dvR=(i,lo,hi,lab,ex)=>{if(hi-lo<0.01)return;const x=rx0+26+36*i;dimV(x,zp(lo),zp(hi),lab,x+4,ex,'right');};
