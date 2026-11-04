@@ -64,9 +64,8 @@ svg{width:100%;height:auto;display:block}
    <div class="legend">Windows and radiator (grey) are approximate, defaults measured from the AV layout drawing, radiator estimated; adjust in Room calibration: 4 windows centered on the wall. Altar centered on the wall.</div></div>
   <div class="legend noprint">
    <span class="sw" style="background:#e3c28f"></span>platform / border
-   <span class="sw" style="background:#efd9ae"></span>offering tier (tier 1)
    <span class="sw" style="background:#d3b27a"></span>water tier
-   <span class="sw" style="background:#b9803f"></span>statue riser (tier 2)
+   <span class="sw" style="background:#b9803f"></span>statue riser
    <span class="sw" style="background:#fff;opacity:.5"></span>original altar at 50%
   </div>
  </section>
@@ -159,19 +158,18 @@ const ZENDO = `<path d="M60 0V600" stroke="#c9ced6" stroke-width="0.4"/><path d=
   <path d="M28 90H46" stroke="#d6336c" stroke-width="0.6"/>
 
   `;
-const DEF = {p1:2,rw:40,rd:21,bs:11,bf:0,height:36.5,t1:0,t2:6,wall:18,ww:6,wh:3,ceil:130,winw:44,wing:10.5,winh:79,sill:29};
+const DEF = {p1:2,rw:40,rd:21,bs:11,bf:0,height:36.5,t2:6,wall:18,ww:6,wh:3,ceil:130,winw:44,wing:10.5,winh:79,sill:29};
 const CTL = [
- ['p1','Padding, tier 1','Space around the items on the offering tier (sides + front)',0,4,0.25],
- ['rw','Tier 2 width (X)','Statue riser width, left to right',16,64,0.5],
- ['rd','Tier 2 depth (Y)','Statue riser depth, front to back (grows toward the wall)',6,36,0.5],
+ ['p1','Padding','Space around the items on the platform (sides + front)',0,4,0.25],
+ ['rw','Riser width (X)','Statue riser width, left to right',16,64,0.5],
+ ['rd','Riser depth (Y)','Statue riser depth, front to back (grows toward the wall)',6,36,0.5],
  ['bf','Border, front','Platform border in front of the offering tier',0,14,0.5],
  ['bs','Border, sides','Platform border beside the offering tier (both sides); none at back',0,36,0.5],
  ['wall','Distance from wall','Gap between the altar back and the wall (heater clearance); shown in the zendo view',0,36,0.5],
  ['height','Overall height','Altar platform height above the floor',25,48,0.5],
- ['t1','Tier 1 height','Offering tier, above the platform',0,6,0.25],
  ['ww','Water tier width','Water-bowl tier around the riser on 3 sides (left, right, front): how far it extends',0,12,0.25],
- ['wh','Water tier height','Water-bowl tier, above the platform (between tier 1 and tier 2)',0,16,0.25],
- ['t2','Tier 2 height','Statue riser, above the platform',0,27,0.25],
+ ['wh','Water tier height','Water-bowl tier, above the platform (around the riser)',0,16,0.25],
+ ['t2','Riser height','Statue riser, above the platform',0,27,0.25],
 ];
 const RCTL = [
  ['ceil','Ceiling height','Floor to ceiling, front wall (room view only)',96,160,0.5],
@@ -321,7 +319,7 @@ function roomBg(x0,gy){
 
 function frontView(g,room){
   o=[];S=6;
-  const {ly}=g,{L,Wd,Dp,E,tw}=ly,B=P.bs,P1=P.p1,Hr=P.t2,Ht=P.t1,AH=P.height;
+  const {ly}=g,{L,Wd,Dp,E,tw}=ly,B=P.bs,P1=P.p1,Hr=P.t2,AH=P.height;
   const topIn=room?Math.max(P.ceil,AH+Hr+57):Math.max(AH+Hr+57,OLDH+41),gy=topIn*S+(room?10:34),vbH=gy+(room?20:78);
   const ox=g.oxNew,tx=x=>ox+x*S,pw=Wd*S;
   if(room)roomBg(g.x0,gy);
@@ -345,11 +343,10 @@ function frontView(g,room){
   const rc=L.riser;
   if(Hr>0){rect(tx(rc[0]-P.rw/2),zp(Hr),P.rw*S,Hr*S,'#b9803f',WOODD,1.5);rect(tx(rc[0]-P.rw/2),zp(Hr),P.rw*S,Math.min(0.7,Hr)*S,'#e8c08a',WOODD,1);}
   if(P.ww>0&&P.wh>0){rect(tx(L.water[0]-L.water[2]/2),zp(P.wh),L.water[2]*S,P.wh*S,'#cfae78',WOODD,1.5);rect(tx(L.water[0]-L.water[2]/2),zp(P.wh),L.water[2]*S,Math.min(0.6,P.wh)*S,'#e6cfa0',WOODD,1);}
-  if(Ht>0){rect(tx(B),zp(Ht),tw*S,Ht*S,'#d9b27a',WOODD,1.5);rect(tx(B),zp(Ht),tw*S,Math.min(0.6,Ht)*S,'#ecd3a5',WOODD,1);}
   const T0=T;
   [['orchid',d_orchid],['candle',d_candle],['statue',null],['goldL',d_gold],['goldR',d_gold],['cup',d_cup],['orangeL',d_orange],['orangeR',d_orange],['bowl',d_bowl]].forEach(([n,f])=>{
     if(n==='statue'){T=T0;d_statue_new(tx(L.statue[0]),Hr);}
-    else{T=T0-(n==='cup'?(P.ww>0&&P.wh>0?P.wh:Ht):Ht)*S;f(tx(L[n][0]),L[n][2]);T=T0;}});
+    else{T=T0-(n==='cup'&&P.ww>0&&P.wh>0?P.wh:0)*S;f(tx(L[n][0]),L[n][2]);T=T0;}});
   T=T0;
   if(room)return {html:o.join(''),w:g.x0*2+ROOMW*S,h:vbH};
   const yb=gy+20;
@@ -357,13 +354,12 @@ function frontView(g,room){
   dimH(tx(0),tx(Wd),yb+34,fmt(Wd)+'″  altar width',gy,gy);
   dimV(ox-40,gy,T,fmt(AH)+'″ platform height',ox-4,ox-4);ln(ox-4,T,ox-44,T,EXT,0.7,'2,2');
   const rx0=ox+pw,dvR=(i,lo,hi,lab,ex)=>{if(hi-lo<0.01)return;const x=rx0+22+24*i;dimV(x,zp(lo),zp(hi),lab,x+4,ex,'right');};
-  dvR(0,0,Ht,fmt(Ht)+'″ tier 1',tx(B+tw)+2);
-  if(P.ww>0)dvR(1,0,P.wh,fmt(P.wh)+'″ water tier',tx(L.water[0]+L.water[2]/2)+2);
-  dvR(2,0,Hr,fmt(Hr)+'″ tier 2 (riser)',tx(rc[0]+P.rw/2)+2);
-  dvR(3,Hr,Hr+57,'57″ statue',tx(rc[0])+14);
-  dvR(4,0,Hr+57,fmt(Hr+57)+'″ above platform',tx(rc[0])+14);
-  const x4=rx0+22+24*5;dimV(x4,gy,zp(Hr+57),fmt(AH+Hr+57)+'″ above floor',x4+4,tx(rc[0])+14,'right');
-  ln(rx0,T,rx0+22+24*4+4,T,EXT,0.7,'2,2');ln(rx0,gy,x4+4,gy,EXT,0.7,'2,2');
+  if(P.ww>0)dvR(0,0,P.wh,fmt(P.wh)+'″ water tier',tx(L.water[0]+L.water[2]/2)+2);
+  dvR(1,0,Hr,fmt(Hr)+'″ riser',tx(rc[0]+P.rw/2)+2);
+  dvR(2,Hr,Hr+57,'57″ statue',tx(rc[0])+14);
+  dvR(3,0,Hr+57,fmt(Hr+57)+'″ above platform',tx(rc[0])+14);
+  const x4=rx0+22+24*4;dimV(x4,gy,zp(Hr+57),fmt(AH+Hr+57)+'″ above floor',x4+4,tx(rc[0])+14,'right');
+  ln(rx0,T,rx0+22+24*3+4,T,EXT,0.7,'2,2');ln(rx0,gy,x4+4,gy,EXT,0.7,'2,2');
   return {html:o.join(''),w:g.right,h:vbH};
 }
 
@@ -388,7 +384,6 @@ function topView(g){
   const xr=tx(Wd);
   rect(tx(0),topY,Wd*S,Dp*S,'#e3c28f',WOODD,1.5);
   ln(Math.min(tx(0),g.oxOld??1e9)-10,topY-4,xr,topY-4,'#6b8ca8',3);txt(xr-3,topY-8,'wall',9.5,'end','normal','#6b8ca8');
-  rect(tx(B),ty(Dp),tw*S,(Dp-Bf)*S,'#efd9ae','#8a5a2b',1.4);
   topItems(L,tx,ty,false,S,1);
   const yb=ty(0)+20;
   drawChain(chainOf(ly),tx,yb,ty(0));
@@ -396,11 +391,11 @@ function topView(g){
   const dch=[[0,Bf,fmt(Bf)+'″ border']];if(P1>0)dch.push([Bf,Bf+P1,fmt(P1)+'″']);dch.push([Bf+P1,Dp,fmt(Dp-Bf-P1)+'″ items zone']);
   dch.forEach(([y1,y2,lab])=>{if(y2-y1>0.01)dimV(xr+22,ty(y1),ty(y2),lab,xr,xr,'right');});
   dimV(xr+48,topY,ty(0),fmt(Dp)+'″  altar depth',xr,xr,'right');
-  // full footprints of the upper tiers: riser and water tier (tier 1 = items zone, above)
+  // full footprints of the upper tiers: riser and water tier
   const rc=L.riser,wc=L.water;
   dimV(xr+74,ty(rc[1]-rc[3]/2),ty(rc[1]+rc[3]/2),fmt(P.rd)+'″ riser depth',tx(rc[0]+rc[2]/2),xr,'right');
   if(P.ww>0)dimV(xr+100,ty(wc[1]-wc[3]/2),ty(wc[1]+wc[3]/2),fmt(wc[3])+'″ water tier depth',tx(wc[0]+wc[2]/2),xr,'right');
-  dimH(tx(rc[0]-rc[2]/2),tx(rc[0]+rc[2]/2),yb+68,fmt(P.rw)+'″ riser (tier 2) width',null,null);
+  dimH(tx(rc[0]-rc[2]/2),tx(rc[0]+rc[2]/2),yb+68,fmt(P.rw)+'″ riser width',null,null);
   if(P.ww>0)dimH(tx(wc[0]-wc[2]/2),tx(wc[0]+wc[2]/2),yb+102,fmt(wc[2])+'″ water tier width',null,null);
   return {html:o.join(''),w:g.right,h:ty(0)+34+36+(P.ww>0?68:34)};
 }
@@ -412,7 +407,6 @@ function zendoView(g){
   const ax0=125.5-Wd/2,back=600-W,top=back-Dp;
   const ty=y=>top+y; // wall at the bottom; front of the altar faces up into the room
   rect(ax0,top,Wd,Dp,'#e3c28f','#8a5a2b',0.8);
-  rect(ax0+B,top+Bf,tw,Dp-Bf,'#efd9ae','#8a5a2b',0.6);
   topItems(L,x=>ax0+Wd-x,ty,false,1,0.5); // plan is rotated 180° vs the top view, so X mirrors
   // bells (12″ and 8″ dia, sizes assumed) in front of the left zabuton; mokugyo (8″ dia, assumed) in front of the right one.
   // 'In front' = on the altar side of each cushion (cushions at y 467–497, x 46–74 left / 178–206 right)
@@ -445,7 +439,7 @@ function render(){
     ['Altar back to wall',`${fmt(P.wall)}″`],['Front of altar to haishiki',`${Math.round((600-P.wall-Dp)-445)}″`],['Original altar',`55.5″ × 30.5″ × 36.5″, statue top 77.5″`]];
   const html=stats.map(([k,v])=>`<li>${k}: <b>${v}</b></li>`).join('');
   document.getElementById('stats').innerHTML=html;
-  document.getElementById('psum').innerHTML=`<b>Settings:</b> padding tier 1 ${fmt(P.p1)}″ · tier 2 (riser) ${fmt(P.rw)}″ W × ${fmt(P.rd)}″ D · border ${fmt(P.bf)}″ front / ${fmt(P.bs)}″ sides · overall height ${fmt(P.height)}″ · distance from wall ${fmt(P.wall)}″ · tier 1 height ${fmt(P.t1)}″ · water tier ${fmt(P.ww)}″ wide × ${fmt(P.wh)}″ high · tier 2 height ${fmt(P.t2)}″ &nbsp;|&nbsp; Altar ${fmt(Wd)}″ × ${fmt(Dp)}″, statue top ${fmt(P.height+P.t2+57)}″ above floor`;
+  document.getElementById('psum').innerHTML=`<b>Settings:</b> padding ${fmt(P.p1)}″ · riser ${fmt(P.rw)}″ W × ${fmt(P.rd)}″ D · border ${fmt(P.bf)}″ front / ${fmt(P.bs)}″ sides · overall height ${fmt(P.height)}″ · distance from wall ${fmt(P.wall)}″ · water tier ${fmt(P.ww)}″ wide × ${fmt(P.wh)}″ high · riser height ${fmt(P.t2)}″ &nbsp;|&nbsp; Altar ${fmt(Wd)}″ × ${fmt(Dp)}″, statue top ${fmt(P.height+P.t2+57)}″ above floor`;
 }
 function buildControls(){
   buildList('ctls',CTL);buildList('rctls',RCTL);}
