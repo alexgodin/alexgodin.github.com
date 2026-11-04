@@ -305,10 +305,11 @@ function geometry(){
 }
 
 // front wall (estimated from photos): 4 equal windows centered on the room, radiator below
-const ROOMW=251,RAD={w:90,h:19};
+const ROOMW=251,RAD={w:90,h:19},BEAM=17; // ceiling beams hang 17" below the ceiling
 function roomBg(x0,gy){
   const W=ROOMW*S,cx=x0+W/2,wy=gy-(P.sill+P.winh)*S;
   rect(x0,gy-P.ceil*S,W,P.ceil*S,'#efefee','#bbb',1);
+  rect(x0,gy-P.ceil*S,W,BEAM*S,'#c9c9c8','#aaa',1);
   const span=4*P.winw+3*P.wing;
   for(let i=0;i<4;i++){const wx=cx-span*S/2+i*(P.winw+P.wing)*S;
     rect(wx,wy,P.winw*S,P.winh*S,'#d6d9db','#8c8c8c',4);
