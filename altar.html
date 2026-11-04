@@ -159,7 +159,7 @@ const ZENDO = `<path d="M60 0V600" stroke="#c9ced6" stroke-width="0.4"/><path d=
   <path d="M28 90H46" stroke="#d6336c" stroke-width="0.6"/>
 
   `;
-const DEF = {p1:2,rw:40,rd:21,bs:11,bf:7,height:33.5,t1:3,t2:6,wall:18,ww:6,wh:3,ceil:130,winw:44,wing:10.5,winh:79,sill:29};
+const DEF = {p1:2,rw:40,rd:21,bs:11,bf:0,height:33.5,t1:3,t2:6,wall:18,ww:6,wh:3,ceil:130,winw:44,wing:10.5,winh:79,sill:29};
 const CTL = [
  ['p1','Padding, tier 1','Space around the items on the offering tier (sides + front)',0,4,0.25],
  ['rw','Tier 2 width (X)','Statue riser width, left to right',16,64,0.5],
@@ -396,7 +396,13 @@ function topView(g){
   const dch=[[0,Bf,fmt(Bf)+'″ border']];if(P1>0)dch.push([Bf,Bf+P1,fmt(P1)+'″']);dch.push([Bf+P1,Dp,fmt(Dp-Bf-P1)+'″ items zone']);
   dch.forEach(([y1,y2,lab])=>{if(y2-y1>0.01)dimV(xr+22,ty(y1),ty(y2),lab,xr,xr,'right');});
   dimV(xr+48,topY,ty(0),fmt(Dp)+'″  altar depth',xr,xr,'right');
-  return {html:o.join(''),w:g.right,h:ty(0)+34+36};
+  // full footprints of the upper tiers: riser and water tier (tier 1 = items zone, above)
+  const rc=L.riser,wc=L.water;
+  dimV(xr+74,ty(rc[1]-rc[3]/2),ty(rc[1]+rc[3]/2),fmt(P.rd)+'″ riser depth',tx(rc[0]+rc[2]/2),xr,'right');
+  if(P.ww>0)dimV(xr+100,ty(wc[1]-wc[3]/2),ty(wc[1]+wc[3]/2),fmt(wc[3])+'″ water tier depth',tx(wc[0]+wc[2]/2),xr,'right');
+  dimH(tx(rc[0]-rc[2]/2),tx(rc[0]+rc[2]/2),yb+68,fmt(P.rw)+'″ riser (tier 2) width',null,null);
+  if(P.ww>0)dimH(tx(wc[0]-wc[2]/2),tx(wc[0]+wc[2]/2),yb+102,fmt(wc[2])+'″ water tier width',null,null);
+  return {html:o.join(''),w:g.right,h:ty(0)+34+36+(P.ww>0?68:34)};
 }
 
 function zendoView(g){
